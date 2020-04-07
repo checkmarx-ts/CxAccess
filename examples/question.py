@@ -57,7 +57,7 @@ questions = [
                 'name': 'Team Admin Group',
             }
         ],
-        'validate': lambda answer: 'You must choose at least one topping.' \
+        'validate': lambda answer: 'You must choose at least one team' \
             if len(answer) == 0 else True
     }
 ]
