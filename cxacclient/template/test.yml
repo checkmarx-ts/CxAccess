@@ -1,0 +1,10 @@
+CxServer:
+  - Team 1:
+    Scanner:
+      - LDAP Group 2
+      - LDAP Group 2
+  
+  - Team 2:
+    Reviewer:
+      - Group 3
+      - Group 4
