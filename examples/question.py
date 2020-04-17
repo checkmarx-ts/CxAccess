@@ -2,6 +2,7 @@ from __future__ import print_function, unicode_literals
 from pprint import pprint
 from PyInquirer import style_from_dict, Token, prompt, Separator
 
+# PyInquirere Sample Usage
 questions = [
     {
         'type': 'checkbox',
@@ -64,16 +65,3 @@ questions = [
 
 answers = prompt(questions)
 pprint(answers)
-
-
-questions1 = [
-    {
-        'type': 'confirm',
-        'message': 'Do you want to continue?',
-        'name': 'continue',
-        'default': True,
-    }
-]
-
-answers1 = prompt(questions1)
-pprint(answers1)

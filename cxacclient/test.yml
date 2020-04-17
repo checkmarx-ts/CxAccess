@@ -1,0 +1,15 @@
+CxServer:
+  - Team: automatically merge & label scala-steward's PRs
+    Scanner:
+      - LDAP Group 2
+      - LDAP Group 2
+  
+  - Team 2
+    Test:
+      - Group 3
+      - Group 4
+  
+  - Team 3
+    
+
+  
