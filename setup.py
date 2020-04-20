@@ -5,7 +5,8 @@ _version = '0.0.1'
 install_requires=[
     'PyInquirer',
     'requests',
-    'docopt'
+    'docopt',
+    'pyyaml'
 ]
 
 tests_require=[
@@ -39,5 +40,3 @@ setup(
     entry_points={'console_scripts': ['cxacclient=cxacclient.cxacclient:main']}
 
 )
-
-    

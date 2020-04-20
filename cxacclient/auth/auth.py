@@ -2,7 +2,7 @@ import urllib3
 from json import loads
 import requests
 from PyInquirer import prompt, Separator
-from input_validators import PortValidator
+from .input_validators import PortValidator
 
 # Dev Import
 from pprint import pprint
@@ -46,9 +46,9 @@ class Auth(object):
             # {
             #     'type': 'input',
             #     'qmark': 'Checkmarx Port',
-            #     'message': 'Webserver port: Default is 443',
+            #     'message': 'Webserver port: Default is 80',
             #     'name': 'port',
-            #     'default': '443',
+            #     'default': '80',
             #     'validate': PortValidator
             # },
 
@@ -208,8 +208,3 @@ class Auth(object):
             pprint({u'\u274c': " General Error occured.", "status_code": response.status_code})
         
         creds = None
-        
-
-if __name__ == "__main__":
-    auth = Auth()
-    auth.perform_auth()
