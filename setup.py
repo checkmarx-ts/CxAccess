@@ -6,7 +6,9 @@ install_requires=[
     'PyInquirer',
     'requests',
     'docopt',
-    'pyyaml'
+    'pyyaml',
+    'emoji',
+    'pyjwt'
 ]
 
 tests_require=[

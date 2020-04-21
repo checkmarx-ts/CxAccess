@@ -1,8 +1,11 @@
 import urllib3
+import time
+from datetime import datetime
 from json import loads
 import requests
 from PyInquirer import prompt, Separator
-from .input_validators import PortValidator
+import jwt
+from cxacclient.auth import auth
 
 # Dev Import
 from pprint import pprint
@@ -66,26 +69,42 @@ class Auth(object):
                 'choices': [ 
                     Separator('*-* Select Login scope *-*'),
                     {
-                        'name': 'sast_api'
-                    },
-                    {
-                        'name': 'openid'
-                    },
-                    {
-                        'name': 'sast-permissions'
-                    },
-                    {
-                        'name' : 'access-control-permissions'
-                    },
-                    {
-                        'name' : 'access_control_api',
+                        'name' : 'Checkmarx Access Control API',
                         'checked': True
-                    }
+                    },
+                    {
+                        'name' : 'Checkmarx Access Control Permissions'
+                    },
+                    Separator('*-* Currently Disabled *-*'),
+                    {
+                        'name': 'OpenID Client Configuration',
+                        'disabled': 'Future relese'
+                    },
+                    {
+                        'name': 'sast_api',
+                        'disabled': 'Future relese'
+                    },
+                    {
+                        'name': 'sast-permissions',
+                        'disabled': 'Future relese'
+                    },
+                    {
+                        'name': 'Checkmarx Full Access',
+                        'disabled': 'Future relese'
+                    },
                 ]
             }
         ]
+        scope_map = {
+            'Checkmarx CxSAST API': 'sast_api',
+            'Checkmarx CxSAST Permissions': 'sast-permissions'
+            'Open ID Configuration''open_id',
+            'Checkmarx Access Control API': 'access_control_api',
+            'Checkmarx Access Control Permissions': 'access-control-permissions'
+        }
         scope_answers = prompt(scope_questions)
-        self.scope = " ".join(scope_answers['scope'])
+        scope_answers = scope_answers['scope']
+        self.scope = " ".join([scope_map[scope_answer] for scope_answer in scope_answers if scope_answer in scope_map])
 
     def check_ssl_verification(self):
         # Check SSL, If Self-Signed set SSL-Verify false with a prompt
@@ -99,7 +118,7 @@ class Auth(object):
                 {
                     'type': 'confirm',
                     'qmark': 'SSL Verification',
-                    'message': 'Turn off SSL Certificate verification',
+                    'message': 'Self-Signed Cert detected. Turn off SSL Certificate verification?',
                     'name': 'sslVerify'
                 }
             ]
@@ -114,11 +133,14 @@ class Auth(object):
                 'qmark': 'CxREST API Client for use',
                 'message': 'Default is resource_owner_client. Custom client use is to be implemented.',
                 'name': 'client_id',
-                'default': 'resource_owner_client'
+                'default': 'Use Default Client'
             }
         ]
+        client_id_map = {
+            'Use Default Client': 'resource_owner_client'
+        }
         client_id_answers = prompt(client_id_questions)
-        self.client_id = client_id_answers['client_id']
+        self.client_id = client_id_map[client_id_answers['client_id']]
     
     def ask_domain(self):
         """
@@ -174,6 +196,9 @@ class Auth(object):
         
         return prompt(auth_questions)
 
+    def decode_toke(self):
+        pass
+        
     def perform_auth(self):
         """
         Setting default scope to use just the AC Module
@@ -185,7 +210,6 @@ class Auth(object):
         self.check_ssl_verification()
         self.ask_domain()
         creds = self.ask_creds()
-        print(creds)
 
         ###################
         # Do not log this #
@@ -193,12 +217,13 @@ class Auth(object):
         payload = self.auth_payload.format(creds['username'], creds['password'], self.scope, self.client_id)
         auth_url = self.base_url.format(self.host, "/identity/connect/token")
         
+        token_type, token_raw, token_decoded = None, None, None
         try:
             response = self.session.request("POST", auth_url, headers=self.headers, data = payload, verify=self.verify)
-        
             if response.ok:
                 pprint({u'\u2714 Authentication' : "successfull."})
-                self.token = "{0} {1}".format(response.json()['token_type'], response.json()['access_token'])
+                token_type, token_raw = response.json()['token_type'], response.json()['access_token']
+                self.token = "{0} {1}".format(token_type, token_raw)
             else:
                 # To-DO: Log Error
                 pprint({u'\u274c Authentication': "unsuccessful", "status_code": response.status_code})
@@ -207,4 +232,12 @@ class Auth(object):
             # To-Do: Log error
             pprint({u'\u274c': " General Error occured.", "status_code": response.status_code})
         
-        creds = None
+        creds = {}
+
+        # Decode token and print expiry
+        # Do not save token to disk
+        token_decoded = jwt.decode(token_raw, verify=False)
+        print("Token expires by: {0} ({1}).".format(
+            datetime.fromtimestamp(token_decoded['exp']),
+            int(time.time()) - int(token_decoded['exp'])
+        ))

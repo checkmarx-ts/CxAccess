@@ -12,8 +12,9 @@ import docopt
 import sys
 from pprint import pprint
 from pathlib import Path
-from .auth.auth import Auth
+from cxacclient.auth.auth import Auth
 from .config import Config
+
 
 __version__ = '0.0.1'
 
@@ -25,10 +26,15 @@ def main(sysargv=None):
     )
     config = Config()
     config_checked = config.check_path()
+    
     if argv['initialize']:
         if not config_checked:
-    if argv['login']:
-        pass
+            config_checked = config.check_path()
+    
+    # Perform Authentication
+    if argv['login'] and config_checked:
+        authy = Auth()
+        authy.perform_auth()
 
 
 if __name__ == '__main__':
