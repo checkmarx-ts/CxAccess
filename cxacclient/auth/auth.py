@@ -1,6 +1,6 @@
 import urllib3
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from json import loads
 import requests
 from PyInquirer import prompt, Separator
@@ -25,7 +25,8 @@ class Auth(object):
         self.auth_provider = "Application"
         self.auth_payload = payload = 'username={0}&password={1}&grant_type=password&scope={2}&client_id={3}&client_secret=014DF517-39D1-4453-B7B3-9930C563627C'
         self.client_id = str()
-        self.scope = str()
+        # Default to CxAC Only API Scope
+        self.scope = "access_control_api"
         self.base_url = "https://{0}/cxrestapi/auth{1}"
 
         self.headers = {
@@ -65,15 +66,15 @@ class Auth(object):
                 'type': 'checkbox',
                 'qmark': 'Login Scope',
                 'message': 'Select login scope. Access Control is selected by default',
-                'name': 'scope',
+                'name': 'Privileges Choice',
                 'choices': [ 
                     Separator('*-* Select Login scope *-*'),
                     {
-                        'name' : 'Checkmarx Access Control API',
+                        'name' : 'Checkmarx Access Control Module',
                         'checked': True
                     },
                     {
-                        'name' : 'Checkmarx Access Control Permissions'
+                        'name': 'Checkmarx CxSAST Module',
                     },
                     Separator('*-* Currently Disabled *-*'),
                     {
@@ -81,8 +82,8 @@ class Auth(object):
                         'disabled': 'Future relese'
                     },
                     {
-                        'name': 'sast_api',
-                        'disabled': 'Future relese'
+                        'name' : 'Checkmarx Access Control Permissions',
+                        'disabled': 'Future release'
                     },
                     {
                         'name': 'sast-permissions',
@@ -96,15 +97,18 @@ class Auth(object):
             }
         ]
         scope_map = {
-            'Checkmarx CxSAST API': 'sast_api',
-            'Checkmarx CxSAST Permissions': 'sast-permissions'
+            'Checkmarx CxSAST Module': 'sast_api',
+            'Checkmarx CxSAST Module': 'sast-permissions'
             'Open ID Configuration''open_id',
             'Checkmarx Access Control API': 'access_control_api',
             'Checkmarx Access Control Permissions': 'access-control-permissions'
         }
         scope_answers = prompt(scope_questions)
-        scope_answers = scope_answers['scope']
+        scope_answers = scope_answers['Privileges Choice']
         self.scope = " ".join([scope_map[scope_answer] for scope_answer in scope_answers if scope_answer in scope_map])
+
+        if not self.scope:
+            self.scope = 'access_control_api'
 
     def check_ssl_verification(self):
         # Check SSL, If Self-Signed set SSL-Verify false with a prompt
@@ -224,6 +228,13 @@ class Auth(object):
                 pprint({u'\u2714 Authentication' : "successfull."})
                 token_type, token_raw = response.json()['token_type'], response.json()['access_token']
                 self.token = "{0} {1}".format(token_type, token_raw)
+                # Decode token and print expiry
+                # Do not save token to disk
+                token_decoded = jwt.decode(token_raw, verify=False)
+                print("Token expires by: {0} ({1} Hours).".format(
+                    datetime.fromtimestamp(token_decoded['exp']),
+                    ((int(token_decoded['exp']) - int(time.time()))/(3600))
+                ))
             else:
                 # To-DO: Log Error
                 pprint({u'\u274c Authentication': "unsuccessful", "status_code": response.status_code})
@@ -233,11 +244,3 @@ class Auth(object):
             pprint({u'\u274c': " General Error occured.", "status_code": response.status_code})
         
         creds = {}
-
-        # Decode token and print expiry
-        # Do not save token to disk
-        token_decoded = jwt.decode(token_raw, verify=False)
-        print("Token expires by: {0} ({1}).".format(
-            datetime.fromtimestamp(token_decoded['exp']),
-            int(time.time()) - int(token_decoded['exp'])
-        ))
