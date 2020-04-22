@@ -1,24 +1,20 @@
-import urllib3
 import time
 from datetime import datetime, timedelta
 from json import loads
-import requests
 from PyInquirer import prompt, Separator
 import jwt
 from cxacclient.auth import auth
-
+from cxacclient.config import Config
 # Dev Import
 from pprint import pprint
 
-urllib3.disable_warnings()
 
 # To-DO: Assumption is SSL/TLS is enabled.
 # HTTP Support to be enabled :facepalm:
 
-class Auth(object):
+class Auth(Config):
     def __init__(self):
         super().__init__()
-        self.session = requests.Session()
         self.verify = True
         self.token = None
         self.host = "localhost"
@@ -151,7 +147,13 @@ class Auth(object):
         Check available domains configured on Checkmarx Access Control Module
         """
         auth_providers_url = self.base_url.format(self.host, "/AuthenticationProviders")
-        auth_providers_response = self.session.request('GET', url=auth_providers_url, verify=self.verify)
+        response = self.session.request('GET', url=auth_providers_url, verify=self.verify)
+        if not response.ok:
+            raise Exception
+
+        # Write providers
+        auth_providers = response.json()
+        self.save_providers(meta=auth_providers)
 
         auth_provider_questions = [
             {
@@ -166,7 +168,7 @@ class Auth(object):
             }
         ]
         # Setting a static index here.
-        for auth_provider in auth_providers_response.json():
+        for auth_provider in auth_providers:
             auth_provider_questions[0]['choices'].append({'name': auth_provider['name']})
         
         auth_provider_answers = prompt(auth_provider_questions)
@@ -199,11 +201,8 @@ class Auth(object):
                         ]
         
         return prompt(auth_questions)
-
-    def decode_toke(self):
-        pass
         
-    def perform_auth(self):
+    def perform_auth(self, save_config=False):
         """
         Setting default scope to use just the AC Module
         """
@@ -221,8 +220,8 @@ class Auth(object):
         payload = self.auth_payload.format(creds['username'], creds['password'], self.scope, self.client_id)
         auth_url = self.base_url.format(self.host, "/identity/connect/token")
         
-        token_type, token_raw, token_decoded = None, None, None
         try:
+            token_type, token_raw, token_decoded = None, None, None
             response = self.session.request("POST", auth_url, headers=self.headers, data = payload, verify=self.verify)
             if response.ok:
                 pprint({u'\u2714 Authentication' : "successfull."})
@@ -233,8 +232,16 @@ class Auth(object):
                 token_decoded = jwt.decode(token_raw, verify=False)
                 print("Token expires by: {0} ({1} Hours).".format(
                     datetime.fromtimestamp(token_decoded['exp']),
-                    ((int(token_decoded['exp']) - int(time.time()))/(3600))
+                    int((int(token_decoded['exp']) - int(time.time()))/(3600))
                 ))
+                if save_config:
+                    meta = {'token':token_raw, 'auth_time': token_decoded['auth_time'] , 'exp': token_decoded['exp'] , 'team': token_decoded['team']}
+                    self.save_token(meta=meta)
+                    pprint({u'\u2714 Token Config saved at' : self.token_config})
+                    meta = {'host': self.host, 'ssl_verify': self.verify, 'auth_provider': self.auth_provider}
+                    self.save_cxconfig(meta=meta)
+                    pprint({u'\u2714 Cx Config saved at' : self.cx_config})
+
             else:
                 # To-DO: Log Error
                 pprint({u'\u274c Authentication': "unsuccessful", "status_code": response.status_code})

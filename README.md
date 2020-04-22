@@ -3,6 +3,10 @@ Checkmarx Access Control Client for:
 1. Manage Complex Users-Teams-Roles Structure with ease via CLI.
 2. Perform Access Control Administrative tasks via CLI.
 ---
+# To-Dos:
+1. Logging.
+2. Add RoleMappings to team.
+3. Update roles feature.
 
 # Q&A for Access Token
 [![asciicast](https://asciinema.org/a/Zh3FeT2npJXbOW0c1AkNhc7I9.svg)](https://asciinema.org/a/Zh3FeT2npJXbOW0c1AkNhc7I9)
