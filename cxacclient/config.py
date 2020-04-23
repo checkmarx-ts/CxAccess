@@ -16,6 +16,7 @@ class Config(Connection):
         self.team_config = self.config_path / "team.yaml"
         self.token_config = self.config_path / "token.yaml"
         self.cx_config = self.config_path / "cx.yaml"
+        self.update_ldap_roles_config = self.config_path / "updateLdapRoles.yaml"
         self.good = emoji.emojize(':thumbs_up:')
         self.ldap_provider_ids = list()
     
@@ -111,6 +112,14 @@ class Config(Connection):
         with open(self.providers_config, 'r') as providers_reader:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
             return yaml.full_load(providers_reader)
+    def read_update_ldap_config(self):
+        """
+        Read YAML for updating LDAP Roles
+        for CxAC Advanced Roles Mapping
+        """
+        with open(self.update_ldap_roles_config, 'r') as update_ldap_reader:
+            # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
+            return yaml.full_load(update_ldap_reader)
 
     def get_ldap_providers_config(self):
         """

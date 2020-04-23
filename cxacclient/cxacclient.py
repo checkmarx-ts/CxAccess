@@ -3,6 +3,7 @@
 {0} login [-s]
 {0} checktoken
 {0} fetchteams [--suppress-members] [--suppress-ldap-groups] [-o] [-d] [-s]
+{0} updateroles
 {0} (-h | -ver)
 
 Commands:
@@ -10,6 +11,7 @@ init            Create OR Reinitialize a configuration file to connect to Checkm
 login           Authenticate user on Checkmarx
 checktoken      Check token as unexpired. (Requires login --save )  
 fetchteams      Fetch available teams locally
+updateroles     Update LDAP Roles - Advanced Role Mapping
 
 Options:
 -s, --save                  Save OAuth Token into configuration directory.
@@ -70,6 +72,9 @@ def main(sysargv=None):
         sys.stdout.flush()
         sys.stdout.write(str(gt.get_teams()))
 
+    if argv['updateroles']:
+        gt = Teams()
+        gt.update_ac_roles()
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
