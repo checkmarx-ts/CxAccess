@@ -171,8 +171,3 @@ class Teams(Config):
             else:
                 print(response.reason, response.status_code)
                 print('\u274c',"Roles update failed for {0}.".format(ldap_role_update['ldapGroupDisplayName']))
-
-
-if __name__ == "__main__":
-    t = Teams()
-    t.update_ac_roles()
