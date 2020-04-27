@@ -112,6 +112,7 @@ class Config(Connection):
         with open(self.providers_config, 'r') as providers_reader:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
             return yaml.full_load(providers_reader)
+    
     def read_update_ldap_config(self):
         """
         Read YAML for updating LDAP Roles

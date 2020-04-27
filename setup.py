@@ -8,7 +8,8 @@ install_requires=[
     'docopt',
     'pyyaml',
     'emoji',
-    'pyjwt'
+    'pyjwt',
+    'yaspin'
 ]
 
 tests_require=[

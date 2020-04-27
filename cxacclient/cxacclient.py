@@ -43,7 +43,7 @@ def main(sysargv=None):
     )
     config = Config()
     config_checked = config.check_path()
-    
+
     if argv['init']:
         if not config_checked:
             config_checked = config.check_path()
@@ -52,6 +52,7 @@ def main(sysargv=None):
     if argv['login'] and config_checked and argv['--save']:
         authy = Auth()
         authy.perform_auth(save_config=True)
+        
 
     if argv['login'] and config_checked and not argv['--save']:
         authy = Auth()
@@ -71,10 +72,11 @@ def main(sysargv=None):
         gt = Teams()
         sys.stdout.flush()
         sys.stdout.write(str(gt.get_teams()))
-
+    
     if argv['updateroles']:
         gt = Teams()
         gt.update_ac_roles()
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:

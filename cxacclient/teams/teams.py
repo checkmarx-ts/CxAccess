@@ -1,6 +1,7 @@
 import json
 from PyInquirer import prompt
 import yaml
+from yaspin import yaspin
 from cxacclient.config import Config
 
 
@@ -153,21 +154,29 @@ class Teams(Config):
             return id[0]
         return -1
 
+    @yaspin(text="Updating roles ", color="yellow")
     def update_ac_roles(self):
         """
         Update roles
         """
         ldap_role_updates = self.read_update_ldap_config()
-        config_roles = list()
+        config_roles = []
         for ldap_role_update in ldap_role_updates:
-            config_roles = [{'roleId': self.get_role_id(x), 'ldapGroupDn': ldap_role_update['ldapGroupDisplayName'], 'ldapGroupDisplayName': ''} for x in ldap_role_update['roles']]
-            headers = self.headers
-            headers['Content-Type'] = 'application/json;v=1.0'
-            url = "https://{0}/CxRestApi/auth/LDAPServers/1/RoleMappings".format(self.host)
-            data = json.dumps(config_roles)
-            response = self.session.request('PUT', url=url, headers=headers, data=data, verify=self.verify)
-            if response.ok:
-                print('\u2714', "Update succeeded for {0}".format(ldap_role_update['ldapGroupDisplayName']))
-            else:
-                print(response.reason, response.status_code)
-                print('\u274c',"Roles update failed for {0}.".format(ldap_role_update['ldapGroupDisplayName']))
+            for x in ldap_role_update['roles']:
+                config_roles.append({
+                    'roleId': self.get_role_id(x),
+                    'ldapGroupDn': ldap_role_update['ldapGroupDisplayName'],
+                    'ldapGroupDisplayName': ''
+                })
+            # config_roles.add({'roleId': self.get_role_id(x), 'ldapGroupDn': ldap_role_update['ldapGroupDisplayName'], 'ldapGroupDisplayName': ''} for x in ldap_role_update['roles'])
+        config_roles = json.dumps(config_roles)
+        
+        headers = self.headers
+        headers['Content-Type'] = 'application/json;v=1.0'
+        url = "https://{0}/CxRestApi/auth/LDAPServers/1/RoleMappings".format(self.host)
+        response = self.session.request('PUT', url=url, headers=headers, data=config_roles, verify=self.verify)
+        if response.ok:
+            print('\u2714', "Roles Update succeeded.")
+        else:
+            print(response.reason, response.status_code)
+            print('\u274c',"Roles update failed.")
