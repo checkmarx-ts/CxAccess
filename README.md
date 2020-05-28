@@ -7,8 +7,7 @@ Checkmarx Access Control Client for:
 
 # To-Dos:
 1. Logging.
-2. Add RoleMappings to team.
-3. Update roles feature.
+2. LDAP Server ID is a static ID in 4 locations. This number is a bad assumption to make and needs removal.
 
 # Q&A mode to receive Access Token
 [![asciicast](https://asciinema.org/a/Zh3FeT2npJXbOW0c1AkNhc7I9.svg)](https://asciinema.org/a/Zh3FeT2npJXbOW0c1AkNhc7I9)
