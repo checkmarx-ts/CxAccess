@@ -38,9 +38,9 @@ class Auth(Config):
             {
                 'type': 'input',
                 'qmark': 'Checkmarx Host',
-                'message': '(Default localhost).Checkmarx URL, IP, Host-Name or FQDN (Ex: uday.checkmarx.au):',
+                'message': '(Default localhost).Checkmarx URL, IP, Host-Name or FQDN (Ex: sast.checkmarx.au):',
                 'name': 'host',
-                'default': 'uday.cx.au'
+                'default': 'sast.cx.au'
             },
             # To-DO support for HTTP
             # {
@@ -71,24 +71,7 @@ class Auth(Config):
                     },
                     {
                         'name': 'Checkmarx CxSAST Module',
-                    },
-                    Separator('*-* Currently Disabled *-*'),
-                    {
-                        'name': 'OpenID Client Configuration',
-                        'disabled': 'Future relese'
-                    },
-                    {
-                        'name' : 'Checkmarx Access Control Permissions',
-                        'disabled': 'Future release'
-                    },
-                    {
-                        'name': 'sast-permissions',
-                        'disabled': 'Future relese'
-                    },
-                    {
-                        'name': 'Checkmarx Full Access',
-                        'disabled': 'Future relese'
-                    },
+                    }
                 ]
             }
         ]
@@ -99,9 +82,12 @@ class Auth(Config):
             'Checkmarx Access Control API': 'access_control_api',
             'Checkmarx Access Control Permissions': 'access-control-permissions'
         }
-        scope_answers = prompt(scope_questions)
-        scope_answers = scope_answers['Privileges Choice']
-        self.scope = " ".join([scope_map[scope_answer] for scope_answer in scope_answers if scope_answer in scope_map])
+
+        # Uncomment below if additional scope is reuquired.
+        # This module defaults to using just he access control api.
+        # scope_answers = prompt(scope_questions)
+        # scope_answers = scope_answers['Privileges Choice']
+        # self.scope = " ".join([scope_map[scope_answer] for scope_answer in scope_answers if scope_answer in scope_map])
 
         if not self.scope:
             self.scope = 'access_control_api'
@@ -139,8 +125,14 @@ class Auth(Config):
         client_id_map = {
             'Use Default Client': 'resource_owner_client'
         }
-        client_id_answers = prompt(client_id_questions)
-        self.client_id = client_id_map[client_id_answers['client_id']]
+
+        # Uncomment this only if using a non-default custom client.
+        # This will promt for the client ID on the console.
+        # client_id_answers = prompt(client_id_questions)
+        # self.client_id = client_id_map[client_id_answers['client_id']]
+
+        # Comment this below if uncommenting above
+        self.client_id = client_id_map['Use Default Client']
     
     def ask_domain(self):
         """
@@ -179,7 +171,7 @@ class Auth(Config):
         pprint({u'\u2714 Using Auth Provider': self.auth_provider})
 
     def ask_creds(self):
-        domain_append = 'uday'
+        domain_append = 'CxSastUser'
 
         print(self.auth_provider)
         if self.auth_provider != 'Application':

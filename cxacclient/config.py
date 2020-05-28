@@ -8,6 +8,8 @@ import yaml
 import emoji
 from cxacclient.utils.connections import Connection
 
+# To-Do: De-duplicate read-write methods to a factory
+
 class Config(Connection):
     def __init__(self):
         super().__init__()
@@ -17,6 +19,7 @@ class Config(Connection):
         self.token_config = self.config_path / "token.yaml"
         self.cx_config = self.config_path / "cx.yaml"
         self.update_ldap_roles_config = self.config_path / "updateLdapRoles.yaml"
+        self.read_update_teams_config = self.config_path / "updateTeams.yaml"
         self.good = emoji.emojize(':thumbs_up:')
         self.ldap_provider_ids = list()
     
@@ -93,7 +96,6 @@ class Config(Connection):
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
             data = yaml.full_load(token_reader)
             # Token is not expired 
-
             if int(data['exp']) - int(time.time()) > 0:
                 return data['token']
 
@@ -121,6 +123,22 @@ class Config(Connection):
         with open(self.update_ldap_roles_config, 'r') as update_ldap_reader:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
             return yaml.full_load(update_ldap_reader)
+    
+    def write_update_ldap_config(self, meta):
+        """
+        Read YAML for updating LDAP Roles
+        for CxAC Advanced Roles Mapping
+        """
+        with open(self.update_ldap_roles_config, 'w') as update_ldap_writer:
+            # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
+            file_dump = yaml.dump(meta, update_ldap_writer)
+
+    def read_update_teams(self):
+        """
+        Read YAML to update teas
+        """
+        with open(self.read_update_teams_config, 'r') as read_update_teams:
+            return yaml.full_load(read_update_teams)
 
     def get_ldap_providers_config(self):
         """

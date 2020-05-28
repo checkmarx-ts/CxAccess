@@ -1,23 +1,25 @@
 '''Usage: 
 {0} init
-{0} login [-s]
+{0} login [--save]
 {0} checktoken
-{0} fetchteams [--suppress-members] [--suppress-ldap-groups] [-o] [-d] [-s]
+{0} getroles
 {0} updateroles
+{0} fetchteams [--save]
+{0} updateteams
 {0} (-h | -ver)
 
 Commands:
 init            Create OR Reinitialize a configuration file to connect to Checkmarx cxsast v9.0
 login           Authenticate user on Checkmarx
-checktoken      Check token as unexpired. (Requires login --save )  
-fetchteams      Fetch available teams locally
-updateroles     Update LDAP Roles - Advanced Role Mapping
+checktoken      Check token as unexpired. (Requires login --save to be used prior. )  
+getroles        Fetch available roles locally
+updateroles     Update LDAP Roles - Advanced Role Mapping. This replaces all existing roles
+fetchteams      Fetch teams with otpion to save
+updateteams     Update LDAP Mappings to CxSAST Teams.
 
 Options:
 -s, --save                  Save OAuth Token into configuration directory.
 -o, --stdout                STDOUT data for saving.
---suppress-members          Do not include Team's members data.
---suppress-ldap-groups      Do not include Team's LDAP Groupings (If multiple mappings are present).
 -h, --help                  Help.
 -ver, --version             Display version of CxAcClient.
 
@@ -68,7 +70,7 @@ def main(sysargv=None):
         gt.get_teams(save_config=True)
         print(u'\u2714', "Team Structure saved.")
     
-    if argv['fetchteams']and argv['--stdout']:
+    if argv['fetchteams']:
         gt = Teams()
         sys.stdout.flush()
         sys.stdout.write(str(gt.get_teams()))
@@ -76,6 +78,14 @@ def main(sysargv=None):
     if argv['updateroles']:
         gt = Teams()
         gt.update_ac_roles()
+    
+    if argv['getroles']:
+        gt = Teams()
+        gt.save_ac_roles()
+    
+    if argv['updateteams']:
+        gt = Teams()
+        gt.update_teams()
 
 
 if __name__ == '__main__':
