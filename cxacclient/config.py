@@ -34,24 +34,35 @@ class Config(Connection):
         Touch and create yaml file in <user_home_dir>/.cx/ac.yaml
         Touch and create yaml file in <user_home_dir>/.cx/team.yaml
         """
+        # To-Do: Loop over as the list has grown. Make this more pythonic.
         try:
             if not path_exists(self.config_path) or not isdir(self.config_path):
                 print("Config Directory: {0}".format(self.config_path))
                 create_directory(self.config_path)
-            if not path_exists(self.providers_config) or not path_exists(self.team_config) or not path_exists(self.token_config) or not path_exists(self.cx_config):
+            if not path_exists(self.providers_config) or not path_exists(self.team_config):
                 print("creating Providers configuration at: {0}".format(self.providers_config))
                 Path(self.providers_config).touch()
 
                 print("creating Team configuration at: {0}".format(self.team_config))
                 Path(self.team_config).touch()
-
+            
+            if not path_exists(self.token_config) or not path_exists(self.cx_config):
                 print("creating Token config at: {0}".format(self.token_config))
                 Path(self.token_config).touch()
 
                 print("creating Cx config at: {0}".format(self.cx_config))
                 Path(self.cx_config).touch()
+            
+            if not path_exists(self.read_update_teams_config) or not path_exists(self.update_ldap_roles_config):
+                print("creating Update config at: {0}".format(self.read_update_teams_config))
+                Path(self.read_update_teams_config).touch()
+
+                print("creating Update config at: {0}".format(self.update_ldap_roles_config))
+                Path(self.update_ldap_roles_config).touch()
+            
+
             else:
-                print("Configuration directory is at: {0}".format(self.config_path))
+                print("Configuration directory exists at: {0}".format(self.config_path))
             
             # Instead of the pythonic default None
             return True
@@ -59,8 +70,8 @@ class Config(Connection):
         except Exception as err:
             # To-Do: Log this config creation exception
             print(err)
-            print("{0} => Directory configuration errors")
-            return False
+            print("Config files do no exist. Please run cxclient init OR cxclient login --save.")
+            return
 
     # To-Do Get rid of these duplicated saves with a dict get config file path
     def save_cxconfig(self, meta):
@@ -102,14 +113,20 @@ class Config(Connection):
         """
         Read token from config
         """
-        # To-Do: Verify token data
-        with open(self.token_config, 'r') as token_reader:
-            print("Reading token from disk: {0}".format(self.token_config))
-            # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
-            data = yaml.full_load(token_reader)
-            # Token is not expired 
-            if int(data['exp']) - int(time.time()) > 0:
-                return data['token']
+        self.check_path()
+        try:
+            with open(self.token_config, 'r') as token_reader:
+                print("Reading token from disk: {0}".format(self.token_config))
+                # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
+
+                data = yaml.full_load(token_reader)
+                # Token is not expired 
+                
+                if data and int(data['exp']) - int(time.time()) > 0:
+                    return data['token']
+        except Exception as err:
+            print("P")
+            raise FileExistsError
 
     def read_cx_config(self):
         """

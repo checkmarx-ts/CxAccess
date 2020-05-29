@@ -9,6 +9,9 @@ class Teams(Config):
     def __init__(self):
         super().__init__()
         config = self.read_cx_config()
+        if not config:
+            print("Please check configuration files")
+            raise NotImplemented
         self.token = "Bearer {0}".format(self.read_token())
         self.payload = {}
         self.host = config['host']

@@ -4,12 +4,9 @@ from json import loads
 from PyInquirer import prompt, Separator
 import jwt
 from cxacclient.config import Config
-# Dev Import
 from pprint import pprint
-
-
-# To-DO: Assumption is SSL/TLS is enabled.
-# HTTP Support to be enabled :facepalm:
+from sys import exit
+# To-DO: Assumption is SSL/TLS is enabled. Port 80 is currently unsupported.
 
 class Auth(Config):
     def __init__(self):
@@ -91,13 +88,28 @@ class Auth(Config):
         if not self.scope:
             self.scope = 'access_control_api'
 
+    def check_connection(self, url):
+        """
+        Check Connection to target host
+        """
+        try:
+            response = self.session.get(url=url, verify=True)
+            if response.ok:
+                return True
+        except Exception as err:
+            # Try SSL verify off and check
+            try:
+                response = self.session.get(url=url, verify=False)
+                return False
+            except Exception as err:
+                print("Unable to connect to {0}. Please check if host is accessible/available.".format(self.host))
+                exit()
+
     def check_ssl_verification(self):
         # Check SSL, If Self-Signed set SSL-Verify false with a prompt
-        try:
-            url = self.base_url.format(self.host, "/AuthenticationProviders")
-            self.session.get(url=url)
-        except Exception as err:
-            #To-DO: Log here
+        url = self.base_url.format(self.host, "/AuthenticationProviders")
+        #To-DO: Log here
+        if not self.check_connection(url):
             pprint({u'\u274c SSL Error': " Turing off SSL Verification"})
             ssl_questions = [
                 {

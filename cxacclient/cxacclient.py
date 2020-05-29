@@ -4,7 +4,7 @@
 {0} checktoken
 {0} getroles
 {0} updateroles
-{0} fetchteams [--save]
+{0} getteams [--save]
 {0} updateteams
 {0} (-h | -ver)
 
@@ -19,7 +19,6 @@ updateteams     Update LDAP Mappings to CxSAST Teams.
 
 Options:
 -s, --save                  Save OAuth Token into configuration directory.
--o, --stdout                STDOUT data for saving.
 -h, --help                  Help.
 -ver, --version             Display version of CxAcClient.
 
@@ -65,12 +64,12 @@ def main(sysargv=None):
         assert(token_data)
         print(u'\u2714', "Token is valid for use.")
 
-    if argv['fetchteams']and argv['--save']:
+    if argv['getteams']and argv['--save']:
         gt = Teams()
         gt.get_teams(save_config=True)
         print(u'\u2714', "Team Structure saved.")
     
-    if argv['fetchteams']:
+    if argv['getteams']:
         gt = Teams()
         sys.stdout.flush()
         sys.stdout.write(str(gt.get_teams()))
