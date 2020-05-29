@@ -5,12 +5,13 @@ from os.path import isdir
 from os.path import isfile
 from os import mkdir as create_directory
 import yaml
-import emoji
+from yaspin import yaspin
 from cxacclient.utils.connections import Connection
 
 # To-Do: De-duplicate read-write methods to a factory
 
 class Config(Connection):
+    @yaspin(text="Checking Configuration", color="yellow")
     def __init__(self):
         super().__init__()
         self.config_path = Path.joinpath(Path().home(), ".cx")
@@ -20,7 +21,6 @@ class Config(Connection):
         self.cx_config = self.config_path / "cx.yaml"
         self.update_ldap_roles_config = self.config_path / "updateLdapRoles.yaml"
         self.read_update_teams_config = self.config_path / "updateTeams.yaml"
-        self.good = emoji.emojize(':thumbs_up:')
         self.ldap_provider_ids = list()
     
     def check_path(self):
@@ -31,21 +31,22 @@ class Config(Connection):
         """
         try:
             if not path_exists(self.config_path) or not isdir(self.config_path):
-                print("{0} Config Directory: {1}".format(self.good, self.config_path))
+                print("Config Directory: {0}".format(self.config_path))
                 create_directory(self.config_path)
             if not path_exists(self.providers_config) or not path_exists(self.team_config) or not path_exists(self.token_config) or not path_exists(self.cx_config):
-                print("{0} creating Providers configuration at: {1}".format(self.good, self.providers_config))
+                print("creating Providers configuration at: {0}".format(self.providers_config))
                 Path(self.providers_config).touch()
 
-                print("{0} creating Team configuration at: {1}".format(self.good, self.team_config))
+                print("creating Team configuration at: {0}".format(self.team_config))
                 Path(self.team_config).touch()
 
-                print("{0} creating Token config at: {1}".format(self.good, self.token_config))
+                print("creating Token config at: {0}".format(self.token_config))
                 Path(self.token_config).touch()
 
-                print("{0} creating Cx config at: {1}".format(self.good, self.cx_config))
+                print("creating Cx config at: {0}".format(self.cx_config))
                 Path(self.cx_config).touch()
-        
+            else:
+                print("Configuration directory is at: {0}".format(self.config_path))
             return True
 
         except Exception as err:

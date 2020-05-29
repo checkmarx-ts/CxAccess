@@ -5,7 +5,7 @@ urllib3.disable_warnings()
 
 class Connection(object):
     """
-    Requets Session
+    Requets Session class
     """
     def __init__(self):
         super().__init__()

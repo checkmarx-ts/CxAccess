@@ -247,7 +247,7 @@ class Teams(Config):
                 "ldapGroupDn": x[1],
                 "ldapGroupDisplayName": x[0]
             })
-
+ 
         config_teams = json.dumps(config_teams)
         headers = self.headers
         headers['Content-Type'] = 'application/json;v=1.0'

@@ -18,10 +18,10 @@ tests_require=[
 ]
 
 setup(
-    name='cxacclinet',
-    version='0.0.1',
+    name='cxacclient',
+    version='0.0.2',
     description='Checkmarx CxSAST 9.0 Access Control Client',
-    url='',
+    url='https://github.com/checkmarx-ts/CxAcClient',
     author='Uday Korlimarla',
     author_email='Uday.Korlimarla@checkmarx.com',
     classifers=[
@@ -29,11 +29,10 @@ setup(
         'Intended Audience :: System Administrators',
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: APACHE-2.0',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
     keywords='Checkmarx AccessContorl Automation',
-    packages=['cxacclient'],
+    packages=['cxacclient', 'cxacclient.auth', 'cxacclient.utils', 'cxacclient.teams'],
     python_requires='>=3.7',
     install_requires=install_requires,
     extras_require={

@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from json import loads
 from PyInquirer import prompt, Separator
 import jwt
-from cxacclient.auth import auth
 from cxacclient.config import Config
 # Dev Import
 from pprint import pprint

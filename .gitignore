@@ -1,3 +1,5 @@
-cxacclinet.egg-info/
+cxacclient.egg-info/
 *.pyc
 *.test.yml
+build/
+dist/
