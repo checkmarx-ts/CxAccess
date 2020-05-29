@@ -35,7 +35,7 @@ To avoid any relative package imports during development, It is best to stick wi
 ---
 
 ## Mac/Linux
-- add  `export PYTHONPATH=$PYTHONPATH:/Users/uday/CxAcClient` to `.zprofile OR .bashprofile`
+- add  `export PYTHONPATH=$PYTHONPATH:/Users/<user>/CxAcClient` to `.zprofile OR .bashprofile`
 
 ---
 
@@ -43,7 +43,7 @@ To avoid any relative package imports during development, It is best to stick wi
 - Assuing Python was installed with `Add Python 3.8 to PATH` checked. [See here](https://docs.python.org/3/_images/win_installer.png)
 -- Navigate to `My Computer > Properties > Advanced System Settings > Environment Variables >`
 - Edit `PYTHONPATH`(if not existing) under `system variables`.
-- *Append* the repo local clone to the python path. Instance: `C:\Users\udayk\CxAcClient;`
+- *Append* the repo local clone to the python path. Instance: `C:\Users\<user>\CxAcClient;`
 
 ---
 
