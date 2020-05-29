@@ -9,9 +9,14 @@ from yaspin import yaspin
 from cxacclient.utils.connections import Connection
 
 # To-Do: De-duplicate read-write methods to a factory
+# Reserving this for now as a future todo.
 
 class Config(Connection):
-    @yaspin(text="Checking Configuration", color="yellow")
+    """
+    Config depends on connection to make a predictable MRO only.
+    However, MRO is being abused here to make connection available universally.
+    """
+    @yaspin(text="Checking Configuration", color="red")
     def __init__(self):
         super().__init__()
         self.config_path = Path.joinpath(Path().home(), ".cx")
@@ -47,6 +52,8 @@ class Config(Connection):
                 Path(self.cx_config).touch()
             else:
                 print("Configuration directory is at: {0}".format(self.config_path))
+            
+            # Instead of the pythonic default None
             return True
 
         except Exception as err:
@@ -61,6 +68,7 @@ class Config(Connection):
         Save CxServer config - SSL, Host
         """
         with open(self.cx_config, 'w') as cx_config_writer:
+            print("Saving CxConfig at: {0}".format(self.cx_config))
             file_dump = yaml.dump(meta, cx_config_writer)
     
     def save_providers(self, meta):
@@ -68,6 +76,7 @@ class Config(Connection):
         Save Cx Auth Providers to providers.yaml
         """
         with open(self.providers_config, 'w') as provides_writer:
+            print("Cx Auth providers: {0}".format(self.providers_config))
             file_dump = yaml.dump(meta, provides_writer)
 
     def save_token(self, meta):
@@ -78,6 +87,7 @@ class Config(Connection):
         self.check_path()
         # Always write mode to Update from Cx.
         with open(self.token_config, 'w') as token_writer:
+            print("Token is at: {0}".format(self.token_config))
             file_dump = yaml.dump(meta, token_writer)
     
     def save_teams_config(self, meta):
@@ -85,7 +95,7 @@ class Config(Connection):
         Save teams to team_config.yaml
         """
         with open(self.team_config, 'w') as team_config_writer:
-            print(self.team_config)
+            print("Saving teams: {0}".format(self.team_config))
             file_dump = yaml.dump(meta, team_config_writer)
 
     def read_token(self):
@@ -94,6 +104,7 @@ class Config(Connection):
         """
         # To-Do: Verify token data
         with open(self.token_config, 'r') as token_reader:
+            print("Reading token from disk: {0}".format(self.token_config))
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
             data = yaml.full_load(token_reader)
             # Token is not expired 
@@ -106,6 +117,7 @@ class Config(Connection):
         """
         with open(self.cx_config, 'r') as cx_config_reader:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
+            print("Reading config from here: {0}".format(self.cx_config))
             return yaml.full_load(cx_config_reader)
     
     def read_providers_config(self):
@@ -114,6 +126,7 @@ class Config(Connection):
         """
         with open(self.providers_config, 'r') as providers_reader:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
+            print("Reading providers from disk: {0}".format(self.providers_config))
             return yaml.full_load(providers_reader)
     
     def read_update_ldap_config(self):
@@ -123,6 +136,7 @@ class Config(Connection):
         """
         with open(self.update_ldap_roles_config, 'r') as update_ldap_reader:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
+            print("Reading LDAP roles: {0}".format(self.update_ldap_roles_config))
             return yaml.full_load(update_ldap_reader)
     
     def write_update_ldap_config(self, meta):
@@ -132,13 +146,15 @@ class Config(Connection):
         """
         with open(self.update_ldap_roles_config, 'w') as update_ldap_writer:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
+            print("Writing LDAP Config to: {0}".format(self.update_ldap_roles_config))
             file_dump = yaml.dump(meta, update_ldap_writer)
 
     def read_update_teams(self):
         """
-        Read YAML to update teas
+        Read YAML to update teams
         """
         with open(self.read_update_teams_config, 'r') as read_update_teams:
+            print("Reading: {0}".format(self.read_update_teams_config))
             return yaml.full_load(read_update_teams)
 
     def get_ldap_providers_config(self):
@@ -147,4 +163,5 @@ class Config(Connection):
         """
         providers = self.read_providers_config()
         # Get LDAP Provider IDs
+        print("LDAP Provider IDs set")
         self.ldap_provider_ids = [provider['providerId'] for provider in providers if provider['providerType'] == 'LDAP']

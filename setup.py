@@ -7,7 +7,6 @@ install_requires=[
     'requests',
     'docopt',
     'pyyaml',
-    'emoji',
     'pyjwt',
     'yaspin'
 ]
