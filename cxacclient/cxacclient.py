@@ -34,7 +34,7 @@ from cxacclient.config import Config
 from cxacclient.teams.teams import Teams
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.4'
 
 def main(sysargv=None):
     argv = docopt.docopt(
