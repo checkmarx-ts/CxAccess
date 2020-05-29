@@ -24,7 +24,7 @@ Options:
 -ver, --version             Display version of CxAcClient.
 
 
-Report bugs to Uday Korlimarla <Uday.Korlimarla@checkmarx.com>
+Report bugs to Checkmarx <TS-APAC-PS@checkmarx.com>
 '''
 import docopt
 import sys

@@ -1,6 +1,6 @@
 from setuptools import setup
 
-_version = '0.0.1'
+_version = '0.0.3'
 
 install_requires=[
     'PyInquirer',
@@ -19,11 +19,11 @@ tests_require=[
 
 setup(
     name='cxacclient',
-    version='0.0.2',
+    version=_version,
     description='Checkmarx CxSAST 9.0 Access Control Client',
     url='https://github.com/checkmarx-ts/CxAcClient',
-    author='Uday Korlimarla',
-    author_email='Uday.Korlimarla@checkmarx.com',
+    author='Checkmarx TS-APAC',
+    author_email='TS-APAC-PS@checkmarx.com',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: System Administrators',
