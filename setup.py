@@ -24,7 +24,7 @@ setup(
     url='https://github.com/checkmarx-ts/CxAcClient',
     author='Uday Korlimarla',
     author_email='Uday.Korlimarla@checkmarx.com',
-    classifers=[
+    classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: System Administrators',
         'Topic :: Software Development :: Build Tools',
