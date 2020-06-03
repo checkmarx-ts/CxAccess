@@ -1,3 +1,0 @@
-[console_scripts]
-cxaccess = cxaccess.cxaccess:main
-
