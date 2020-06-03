@@ -14,7 +14,6 @@ class Auth(Config):
     def __init__(self, verbose):
         print("Auth Verbose: ", verbose)
         super().__init__(verbose)
-        self.verbose = verbose
         self.verify = True
         self.token = None
         self.host = "localhost"
@@ -42,18 +41,11 @@ class Auth(Config):
                 'name': 'host',
                 'default': 'sast.cx.au'
             },
-            # To-DO support for HTTP
-            # {
-            #     'type': 'input',
-            #     'qmark': 'Checkmarx Port',
-            #     'message': 'Webserver port: Default is 80',
-            #     'name': 'port',
-            #     'default': '80',
-            #     'validate': PortValidator
-            # },
-
         ]
         host_answers = prompt(host_questions)
+        if self.verbose:
+            print(host_answers)
+            print("Host: {0}".format(host_answers['host']))
         self.host = host_answers['host']
     
     def set_scope(self):
@@ -124,6 +116,8 @@ class Auth(Config):
                 }
             ]
             ssl_answer = prompt(ssl_questions)
+            if self.verbose:
+                print(ssl_answer)
             self.verify = not ssl_answer['sslVerify']
     
     def set_client_id(self):
@@ -147,6 +141,8 @@ class Auth(Config):
         # self.client_id = client_id_map[client_id_answers['client_id']]
 
         # Comment this below if uncommenting above
+        if self.verbose:
+            print("client ID: ", self.client_id)
         self.client_id = client_id_map['Use Default Client']
     
     def ask_domain(self):
@@ -183,7 +179,8 @@ class Auth(Config):
             auth_provider_answers['provider'].append('Application')
         
         self.auth_provider = auth_provider_answers['provider'][0]
-        print("Using Auth Provider: {0}".format(self.auth_provider))
+        if self.verbose:
+            print("Using Auth Provider: {0}".format(self.auth_provider))
 
     def ask_creds(self):
         domain_append = 'CxSastUser'
@@ -251,10 +248,11 @@ class Auth(Config):
 
             else:
                 # To-DO: Log Error
-                print("Authentication unsuccessful. Status: {0}".format(response.status_code))
+                print("Authentication unsuccessful.")
+                if self.verbose:
+                    print(response.text)
             
         except requests.exceptions.RequestException as http_err:
             # To-Do: Log error
             print(" General Error occured. Status: {0}".format(response.status_code))
-        
         creds = {}

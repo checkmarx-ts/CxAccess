@@ -5,7 +5,6 @@ from os.path import isdir
 from os.path import isfile
 from os import mkdir as create_directory
 import yaml
-from yaspin import yaspin
 from cxaccess.utils.connections import Connection
 
 # To-Do: De-duplicate read-write methods to a factory
@@ -16,20 +15,21 @@ class Config(Connection):
     Config depends on connection to make a predictable MRO only.
     However, MRO is being abused here to make connection available universally.
     """
-    @yaspin(text="Checking Configuration")
     def __init__(self, verbose):
         super().__init__(verbose)
         self.verbose = verbose
         self.config_path = Path.joinpath(Path().home(), ".cx")
+        self.log_path = Path.joinpath(self.config_path, "logs")
         self.providers_config = self.config_path / "providers.yaml"
         self.team_config = self.config_path / "team.yaml"
         self.token_config = self.config_path / "token.yaml"
         self.cx_config = self.config_path / "cx.yaml"
         self.update_ldap_roles_config = self.config_path / "updateLdapRoles.yaml"
         self.read_update_teams_config = self.config_path / "updateTeams.yaml"
+        # Setting this as default for LDAP Provider ID
+        # This may require clean-up if multiple LDAP connections are to be used.
         self.ldap_provider_id = 1
 
-    @yaspin(text="path")
     def check_path(self):
         """
         Implicit check
@@ -37,46 +37,41 @@ class Config(Connection):
         Touch and create yaml file in <user_home_dir>/.cx/team.yaml
         """
         # To-Do: Loop over as the list has grown. Make this more pythonic.
+        config_dirs = [self.config_path, self.log_path]
+
+        config_files = [self.providers_config, self.team_config, self.token_config, self.cx_config,
+                        self.read_update_teams_config, self.update_ldap_roles_config
+                       ]
+        
         try:
-            if not path_exists(self.config_path) or not isdir(self.config_path):
-                print("Config Directory: {0}".format(self.config_path))
-                create_directory(self.config_path)
-            if not path_exists(self.providers_config) or not path_exists(self.team_config):
-                print("creating Providers configuration at: {0}".format(self.providers_config))
-                Path(self.providers_config).touch()
-
-                print("creating Team configuration at: {0}".format(self.team_config))
-                Path(self.team_config).touch()
+            for config_dir in config_dirs:
+                if not path_exists(config_dir) or not isdir(config_dir):
+                    if self.verbose:
+                        print("Creating config directory: {0}".format(config_dir))
+                    create_directory(config_dir)
+                else:
+                    if self.verbose:
+                        print("Directory exists at: {0}".format(config_dir))
+                
+            for config_file in config_files:
+                if not path_exists(config_file):
+                    if self.verbose:
+                        print("creating config file at: {0}".format(config_file))
+                    Path(config_file).touch()
+                else:
+                    if self.verbose:
+                        print("Config file exists at: {0}".format(config_file))
             
-            if not path_exists(self.token_config) or not path_exists(self.cx_config):
-                print("creating Token config at: {0}".format(self.token_config))
-                Path(self.token_config).touch()
-
-                print("creating Cx config at: {0}".format(self.cx_config))
-                Path(self.cx_config).touch()
-            
-            if not path_exists(self.read_update_teams_config) or not path_exists(self.update_ldap_roles_config):
-                print("creating Update config at: {0}".format(self.read_update_teams_config))
-                Path(self.read_update_teams_config).touch()
-
-                print("creating Update config at: {0}".format(self.update_ldap_roles_config))
-                Path(self.update_ldap_roles_config).touch()
-            
-
-            else:
-                print("Configuration directory exists at: {0}".format(self.config_path))
-            
-            # Instead of the pythonic default None
+            if self.verbose:
+                print("Config directory and files exist already")
             return True
 
         except Exception as err:
-            # To-Do: Log this config creation exception
-            print(err)
             print("Config files do no exist. Please run cxclient init OR cxclient login --save.")
+            if self.verbose:
+                print(err)
             return
 
-    # To-Do Get rid of these duplicated saves with a dict get config file path
-    @yaspin(text="Saving Config")
     def save_cxconfig(self, meta):
         """
         Save CxServer config - SSL, Host
@@ -85,7 +80,6 @@ class Config(Connection):
             print("Saving CxConfig at: {0}".format(self.cx_config))
             file_dump = yaml.dump(meta, cx_config_writer)
     
-    @yaspin(text="Saving Config")
     def save_providers(self, meta):
         """
         Save Cx Auth Providers to providers.yaml
@@ -94,7 +88,6 @@ class Config(Connection):
             print("Cx Auth providers: {0}".format(self.providers_config))
             file_dump = yaml.dump(meta, provides_writer)
 
-    @yaspin(text="Saving token")
     def save_token(self, meta):
         """
         Save OAuth Token to Configuration directory
@@ -106,7 +99,6 @@ class Config(Connection):
             print("Token is at: {0}".format(self.token_config))
             file_dump = yaml.dump(meta, token_writer)
     
-    @yaspin(text="Saving teams")
     def save_teams_config(self, meta):
         """
         Save teams to team_config.yaml
@@ -115,7 +107,6 @@ class Config(Connection):
             print("Saving teams: {0}".format(self.team_config))
             file_dump = yaml.dump(meta, team_config_writer)
 
-    @yaspin(text="Reading Token")
     def read_token(self):
         """
         Read token from config
@@ -127,15 +118,19 @@ class Config(Connection):
                 # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
 
                 data = yaml.full_load(token_reader)
-                # Token is not expired 
-                
-                if data and int(data['exp']) - int(time.time()) > 0:
-                    return data['token']
+                # Token is not expired
+                assert(data)          
+                time_gap = int(data['exp']) - int(time.time())
+                if self.verbose and time_gap > 0:
+                    print("Token is valid for: {0} minutes.".format(int(time_gap/60)))
+                if self.verbose and time_gap <= 0:
+                    print("Token expired OR is invalid. Please try login with --save")
         except Exception as err:
-            print("P")
-            raise FileExistsError
+            if self.verbose:
+                print("File is missing. Please try init, then login with --save flag.")
+                raise FileExistsError
+            pass
 
-    @yaspin(text="Reading config")
     def read_cx_config(self):
         """
         Read CxConfig from config
@@ -145,7 +140,6 @@ class Config(Connection):
             print("Reading config from here: {0}".format(self.cx_config))
             return yaml.full_load(cx_config_reader)
     
-    @yaspin(text="Reading config")
     def read_providers_config(self):
         """
         Read Providers from config
@@ -155,7 +149,6 @@ class Config(Connection):
             print("Reading providers from disk: {0}".format(self.providers_config))
             return yaml.full_load(providers_reader)
     
-    @yaspin(text="Reading config")
     def read_update_ldap_config(self):
         """
         Read YAML for updating LDAP Roles
@@ -166,7 +159,6 @@ class Config(Connection):
             print("Reading LDAP roles: {0}".format(self.update_ldap_roles_config))
             return yaml.full_load(update_ldap_reader)
     
-    @yaspin(text="Reading config")
     def write_update_ldap_config(self, meta):
         """
         Read YAML for updating LDAP Roles
@@ -177,7 +169,6 @@ class Config(Connection):
             print("Writing LDAP Config to: {0}".format(self.update_ldap_roles_config))
             file_dump = yaml.dump(meta, update_ldap_writer)
 
-    @yaspin(text="Reading config")
     def read_update_teams(self):
         """
         Read YAML to update teams
@@ -186,7 +177,6 @@ class Config(Connection):
             print("Reading: {0}".format(self.read_update_teams_config))
             return yaml.full_load(read_update_teams)
 
-    @yaspin(text="Reading config")
     def get_ldap_providers_config(self):
         """
         Get LDAP Providers from config file

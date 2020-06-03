@@ -1,13 +1,14 @@
 import json
 from PyInquirer import prompt
 import yaml
-from yaspin import yaspin
 from cxaccess.config import Config
 
 
 class Teams(Config):
+    """
+    LDAP Advanced Role Mappings & Checkmarx Team LDAP Mappings
+    """
     def __init__(self, verbose):
-        print("Team Verbosity: ", verbose)
         super().__init__(verbose)
         config = self.read_cx_config()
         if not config:
@@ -41,7 +42,6 @@ class Teams(Config):
             ldap_dn_list = [x['ldapGroupDisplayName'] for x in ldap_team_mappings]
             roles = [x['role'] for x in self.ldap_role_mappings if x['ldapGroupDn'] in ldap_dn_list]
         return roles
-
 
     def get_teams(self, save_config=False):
         """
@@ -177,7 +177,6 @@ class Teams(Config):
         else:
             print(response.status_code, response.reason)
 
-    @yaspin(text="Updating roles ", color="yellow")
     def update_ac_roles(self):
         """
         Update roles

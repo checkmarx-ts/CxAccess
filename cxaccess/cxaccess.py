@@ -1,5 +1,5 @@
 '''Usage: 
-{0} init
+{0} init [--verbose]
 {0} login [--save] [--verbose]
 {0} checktoken [--verbose]
 {0} getroles [--verbose]
@@ -19,8 +19,8 @@ fetchteams      Fetch teams with otpion to save
 updateteams     Update LDAP Mappings to CxSAST Teams.
 
 Options:
--s, --save                  Save OAuth Token into configuration directory.
--h, --help                  Help.
+-s, --save               Save OAuth Token into configuration directory.
+-h, --help               Help.
 -v, --verbose            Display version of CxAccess.
 
 
@@ -34,7 +34,7 @@ from cxaccess.config import Config
 from cxaccess.teams.teams import Teams
 
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 def main(sysargv=None):
     argv = docopt.docopt(
@@ -52,26 +52,23 @@ def main(sysargv=None):
         verbose = True
 
     config = Config(verbose)
-    config_checked = config.check_path()
+    config_checked = None
 
     if argv['init']:
         if not config_checked:
             config_checked = config.check_path()
     
     # Perform Authentication and Save token
-    if argv['login'] and config_checked and argv['--save']:
+    if argv['login'] and argv['--save']:
         authy = Auth(verbose)
         authy.perform_auth(save_config=True)
-        
-
-    if argv['login'] and config_checked and not argv['--save']:
+    
+    if argv['login'] and not argv['--save']:
         authy = Auth(verbose)
         authy.perform_auth()
     
     if argv['checktoken']:
-        token_data = config.read_token()
-        assert(token_data)
-        print("Token is valid for use.")
+        config.read_token()
 
     if argv['getteams']and argv['--save']:
         gt = Teams(verbose)
@@ -98,6 +95,5 @@ def main(sysargv=None):
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print(sys.argv)
         sys.argv.append('-h')
     sys.exit(main(sys.argv[1:]))

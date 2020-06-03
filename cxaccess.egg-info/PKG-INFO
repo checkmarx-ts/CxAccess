@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: cxaccess
-Version: 0.0.4
+Version: 0.0.6
 Summary: Checkmarx CxSAST 9.0 Access Control Client LDAP Automation
 Home-page: https://github.com/checkmarx-ts/CxAcClient
 Author: Checkmarx TS-APAC

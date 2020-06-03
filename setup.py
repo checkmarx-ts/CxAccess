@@ -1,6 +1,6 @@
 from setuptools import setup
 
-_version = '0.0.4'
+_version = '0.0.6'
 
 install_requires=[
     'PyInquirer',
@@ -8,7 +8,6 @@ install_requires=[
     'docopt',
     'pyyaml',
     'pyjwt',
-    'yaspin'
 ]
 
 tests_require=[

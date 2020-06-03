@@ -16,3 +16,4 @@ cxaccess/teams/__init__.py
 cxaccess/teams/teams.py
 cxaccess/utils/__init__.py
 cxaccess/utils/connections.py
+cxaccess/utils/logger.py

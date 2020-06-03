@@ -1,4 +1,4 @@
-cxacclient.egg-info/
+cxaccess.egg-info/
 *.pyc
 *.test.yml
 build/
