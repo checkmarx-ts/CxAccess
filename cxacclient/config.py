@@ -26,7 +26,7 @@ class Config(Connection):
         self.cx_config = self.config_path / "cx.yaml"
         self.update_ldap_roles_config = self.config_path / "updateLdapRoles.yaml"
         self.read_update_teams_config = self.config_path / "updateTeams.yaml"
-        self.ldap_provider_ids = list()
+        self.ldap_provider_id = 1
     
     def check_path(self):
         """
@@ -180,5 +180,9 @@ class Config(Connection):
         """
         providers = self.read_providers_config()
         # Get LDAP Provider IDs
-        print("LDAP Provider IDs set")
-        self.ldap_provider_ids = [provider['providerId'] for provider in providers if provider['providerType'] == 'LDAP']
+        ldap_provider_ids = [provider['providerId'] for provider in providers if provider['providerType'] == 'LDAP']
+        
+        if ldap_provider_ids:
+            print("LDAP Provider is now set")
+            # Default to the first LDAP Provider ID
+            self.ldap_provider_id = ldap_provider_ids[0]

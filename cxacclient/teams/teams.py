@@ -98,37 +98,37 @@ class Teams(Config):
         """
         self.get_ldap_providers_config()
 
-        for ldap_provider_id in self.ldap_provider_ids:
-            ldap_url = self.ldap_team_mappings_url.format(self.host, ldap_provider_id)
-            try:
-                response = self.session.request('GET', ldap_url, data=self.payload, headers=self.headers, verify=self.verify)
-                if response.ok:
-                    self.ldap_team_mappings.extend(response.json())
 
-            except Exception as err:
-                # To-Do: Log err
-                raise Exception
+        ldap_url = self.ldap_team_mappings_url.format(self.host, self.ldap_provider_id)
+        try:
+            response = self.session.request('GET', ldap_url, data=self.payload, headers=self.headers, verify=self.verify)
+            if response.ok:
+                self.ldap_team_mappings.extend(response.json())
+
+        except Exception as err:
+            # To-Do: Log err
+            raise Exception
 
     def get_ldap_role_mappings(self):
         """
         Get LDAP Roles
         """
-        for ldap_provider_id in self.ldap_provider_ids:
-            url = self.ldap_roles_mappings_url.format(self.host, ldap_provider_id)
-            try:
-                response = self.session.request('GET', url=url, data=self.payload, headers=self.headers, verify=self.verify)
-                if response.ok:
-                    ldap_roles_data = response.json()
-                    for ldap_role_d in ldap_roles_data:
-                        x = {'role': self.get_role_name(ldap_role_d['roleId']), 'ldapGroupDn': ldap_role_d['ldapGroupDn'], 'ldapGroupDisplayName': ldap_role_d['ldapGroupDisplayName']}
-                        self.ldap_role_mappings.append(x)
 
-                else:
-                    # To-Do: Log err
-                    print(response.status_code, response.reason)
-            except Exception as err:
+        url = self.ldap_roles_mappings_url.format(self.host, self.ldap_provider_id)
+        try:
+            response = self.session.request('GET', url=url, data=self.payload, headers=self.headers, verify=self.verify)
+            if response.ok:
+                ldap_roles_data = response.json()
+                for ldap_role_d in ldap_roles_data:
+                    x = {'role': self.get_role_name(ldap_role_d['roleId']), 'ldapGroupDn': ldap_role_d['ldapGroupDn'], 'ldapGroupDisplayName': ldap_role_d['ldapGroupDisplayName']}
+                    self.ldap_role_mappings.append(x)
+
+            else:
                 # To-Do: Log err
-                raise Exception
+                print(response.status_code, response.reason)
+        except Exception as err:
+            # To-Do: Log err
+            raise Exception
 
     def get_ac_roles(self):
         """
@@ -188,7 +188,7 @@ class Teams(Config):
         ###################################
         ### Change 1 to Dynamic values ###
         ##################################
-        url = "https://{0}/CxRestApi/auth/LDAPServers/1/RoleMappings".format(self.host)
+        url = "https://{0}/CxRestApi/auth/LDAPServers/{1}/RoleMappings".format(self.host, self.ldap_provider_id)
 
         config_roles = []
 
@@ -205,13 +205,13 @@ class Teams(Config):
         #########
         ## Remove Static LdapserverID
         #########
-        url = "https://{0}/CxRestApi/auth/LDAPServers/1/RoleMappings".format(self.host)
+        url = "https://{0}/CxRestApi/auth/LDAPServers/{1}/RoleMappings".format(self.host, self.ldap_provider_id)
         response = self.session.request('PUT', url=url, headers=headers, data=config_roles, verify=self.verify)
         if response.ok:
-            print('\u2714', "Roles Update succeeded.")
+            print("Roles Update succeeded.")
         else:
             print(response.reason, response.status_code)
-            print('\u274c',"Roles update failed.")
+            print("Roles update failed.")
 
     def save_ac_roles(self):
         """
@@ -219,7 +219,7 @@ class Teams(Config):
         """
         headers = self.headers
         headers['Content-Type'] = 'application/json;v=1.0'
-        url = "https://{0}/CxRestApi/auth/LDAPRoleMappings?ldapServerId=1".format(self.host)
+        url = "https://{0}/CxRestApi/auth/LDAPRoleMappings?ldapServerId={1}".format(self.host, self.ldap_provider_id)
         response = self.session.request('GET', url=url, headers=headers, data={}, verify=self.verify)
         
         config_roles = {}
@@ -230,11 +230,11 @@ class Teams(Config):
                     self.get_role_name(role['roleId']): role['ldapGroupDn'].split(";")
                 })
             self.write_update_ldap_config(config_roles)
-            print('\u2714', "Roles save succeeded.")
+            print("Roles save succeeded.")
         else:
             print(response.reason, response.status_code)
             print(response.text)
-            print('\u274c',"Roles save failed.")
+            print("Roles save failed.")
 
     def update_teams(self):
         """
@@ -242,27 +242,25 @@ class Teams(Config):
         """
         teams = self.read_update_teams()
         config_teams = []
-
+       
         for team in teams:
-            x = teams[team].split(";")
-            config_teams.append({
-                "teamId": self.get_team_id(team),
-                "ldapGroupDn": x[1],
-                "ldapGroupDisplayName": x[0]
-            })
- 
+            teamId = self.get_team_id(team)
+            ldap_team_maps = teams[team].keys()
+            for ldap_team_map in ldap_team_maps:
+                config_teams.append({
+                    "teamId": teamId,
+                    "ldapGroupDisplayName": ldap_team_map,
+                    "ldapGroupDn": teams[team][ldap_team_map]
+                })
         config_teams = json.dumps(config_teams)
         headers = self.headers
         headers['Content-Type'] = 'application/json;v=1.0'
         
-        #########
-        ## Remove Static LdapserverID
-        #########
-        url = "https://{0}/CxRestApi/auth//LDAPServers/1/TeamMappings".format(self.host)
+        url = "https://{0}/CxRestApi/auth/LDAPServers/{1}/TeamMappings".format(self.host, self.ldap_provider_id)
         response = self.session.request('PUT', url=url, headers=headers, data=config_teams, verify=self.verify)
         
         if response.ok:
-            print('\u2714',"teams update succeeded.")
+            print("teams update succeeded.")
         else:
             print(response.reason, response.status_code)
-            print('\u274c',"Roles update failed.")
+            print("Roles update failed.")
