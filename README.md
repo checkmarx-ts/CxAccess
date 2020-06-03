@@ -1,5 +1,5 @@
 # CxAccess
-Checkmarx Access Control Client for:
+Checkmarx Access Control Helper for:
 1. Manage Complex Users-Teams-Roles Structure with ease via CLI.
 2. Perform Access Control Administrative tasks via CLI.
 
