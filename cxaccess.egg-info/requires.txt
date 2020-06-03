@@ -1,0 +1,16 @@
+PyInquirer
+requests
+docopt
+pyyaml
+pyjwt
+yaspin
+
+[tests]
+PyInquirer
+requests
+docopt
+pyyaml
+pyjwt
+yaspin
+pytest
+mock

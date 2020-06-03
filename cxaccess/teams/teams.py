@@ -2,12 +2,13 @@ import json
 from PyInquirer import prompt
 import yaml
 from yaspin import yaspin
-from cxacclient.config import Config
+from cxaccess.config import Config
 
 
 class Teams(Config):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, verbose):
+        print("Team Verbosity: ", verbose)
+        super().__init__(verbose)
         config = self.read_cx_config()
         if not config:
             print("Please check configuration files")
@@ -62,13 +63,13 @@ class Teams(Config):
 
             if save_config:
                 self.save_teams_config(meta=meta_teams_data)
-                print(u'\u2714', "Teams config fetch successfull.")
+                print("Teams config fetch successfull.")
                 return True
             else:
                 print("Not saving")
                 return meta_teams_data
         else:
-            print(u'\u274c', "Teams fetch unsuccessful")
+            print("Teams fetch unsuccessful")
 
     def get_team_members(self, team_id):
         """

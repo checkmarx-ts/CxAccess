@@ -1,5 +1,4 @@
 from __future__ import print_function, unicode_literals
-from pprint import pprint
 from PyInquirer import style_from_dict, Token, prompt, Separator
 
 # PyInquirere Sample Usage
@@ -64,4 +63,3 @@ questions = [
 ]
 
 answers = prompt(questions)
-pprint(answers)

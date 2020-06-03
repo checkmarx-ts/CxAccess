@@ -3,14 +3,18 @@ from datetime import datetime, timedelta
 from json import loads
 from PyInquirer import prompt, Separator
 import jwt
-from cxacclient.config import Config
-from pprint import pprint
+from cxaccess.config import Config
 from sys import exit
 # To-DO: Assumption is SSL/TLS is enabled. Port 80 is currently unsupported.
 
 class Auth(Config):
-    def __init__(self):
-        super().__init__()
+    """
+    Perform all Authentication tasks here!
+    """
+    def __init__(self, verbose):
+        print("Auth Verbose: ", verbose)
+        super().__init__(verbose)
+        self.verbose = verbose
         self.verify = True
         self.token = None
         self.host = "localhost"
@@ -110,7 +114,7 @@ class Auth(Config):
         url = self.base_url.format(self.host, "/AuthenticationProviders")
         #To-DO: Log here
         if not self.check_connection(url):
-            pprint({u'\u274c SSL Error': " Turing off SSL Verification"})
+            print("SSL Validation Error occured")
             ssl_questions = [
                 {
                     'type': 'confirm',
@@ -179,7 +183,7 @@ class Auth(Config):
             auth_provider_answers['provider'].append('Application')
         
         self.auth_provider = auth_provider_answers['provider'][0]
-        pprint({u'\u2714 Using Auth Provider': self.auth_provider})
+        print("Using Auth Provider: {0}".format(self.auth_provider))
 
     def ask_creds(self):
         domain_append = 'CxSastUser'
@@ -227,7 +231,7 @@ class Auth(Config):
             token_type, token_raw, token_decoded = None, None, None
             response = self.session.request("POST", auth_url, headers=self.headers, data = payload, verify=self.verify)
             if response.ok:
-                pprint({u'\u2714 Authentication' : "successfull."})
+                print("Authentication successfull.")
                 token_type, token_raw = response.json()['token_type'], response.json()['access_token']
                 self.token = "{0} {1}".format(token_type, token_raw)
                 # Decode token and print expiry
@@ -240,17 +244,17 @@ class Auth(Config):
                 if save_config:
                     meta = {'token':token_raw, 'auth_time': token_decoded['auth_time'] , 'exp': token_decoded['exp'] , 'team': token_decoded['team']}
                     self.save_token(meta=meta)
-                    pprint({u'\u2714 Token Config saved at' : self.token_config})
+                    print("Token Config saved at' : self.token_config")
                     meta = {'host': self.host, 'ssl_verify': self.verify, 'auth_provider': self.auth_provider}
                     self.save_cxconfig(meta=meta)
-                    pprint({u'\u2714 Cx Config saved at' : self.cx_config})
+                    print("Cx Config saved at' : self.cx_config")
 
             else:
                 # To-DO: Log Error
-                pprint({u'\u274c Authentication': "unsuccessful", "status_code": response.status_code})
+                print("Authentication unsuccessful. Status: {0}".format(response.status_code))
             
         except requests.exceptions.RequestException as http_err:
             # To-Do: Log error
-            pprint({u'\u274c': " General Error occured.", "status_code": response.status_code})
+            print(" General Error occured. Status: {0}".format(response.status_code))
         
         creds = {}

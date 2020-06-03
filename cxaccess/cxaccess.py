@@ -1,12 +1,13 @@
 '''Usage: 
 {0} init
-{0} login [--save]
-{0} checktoken
-{0} getroles
-{0} updateroles
-{0} getteams [--save]
-{0} updateteams
-{0} (-h | -ver)
+{0} login [--save] [--verbose]
+{0} checktoken [--verbose]
+{0} getroles [--verbose]
+{0} updateroles [--verbose]
+{0} getteams [--save] [--verbose]
+{0} updateteams [--verbose]
+{0} (-h | --help)
+{0} version
 
 Commands:
 init            Create OR Reinitialize a configuration file to connect to Checkmarx cxsast v9.0
@@ -20,29 +21,37 @@ updateteams     Update LDAP Mappings to CxSAST Teams.
 Options:
 -s, --save                  Save OAuth Token into configuration directory.
 -h, --help                  Help.
--ver, --version             Display version of CxAcClient.
+-v, --verbose            Display version of CxAccess.
 
 
 Report bugs to Checkmarx (Cx TS-APAC) <TS-APAC-PS@checkmarx.com>
 '''
 import docopt
 import sys
-from pprint import pprint
 from pathlib import Path
-from cxacclient.auth.auth import Auth
-from cxacclient.config import Config
-from cxacclient.teams.teams import Teams
+from cxaccess.auth.auth import Auth
+from cxaccess.config import Config
+from cxaccess.teams.teams import Teams
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 def main(sysargv=None):
     argv = docopt.docopt(
-        doc=__doc__.format('cxacclient'),
+        doc=__doc__.format('cxaccess'),
         argv=sysargv,
         version=__version__
     )
-    config = Config()
+    if argv['version']:
+        print("CxAccess version: {0}".format(__version__))
+        sys.exit(0)
+    
+    # Default to 
+    verbose = False
+    if argv['--verbose']:
+        verbose = True
+
+    config = Config(verbose)
     config_checked = config.check_path()
 
     if argv['init']:
@@ -51,39 +60,39 @@ def main(sysargv=None):
     
     # Perform Authentication and Save token
     if argv['login'] and config_checked and argv['--save']:
-        authy = Auth()
+        authy = Auth(verbose)
         authy.perform_auth(save_config=True)
         
 
     if argv['login'] and config_checked and not argv['--save']:
-        authy = Auth()
+        authy = Auth(verbose)
         authy.perform_auth()
     
     if argv['checktoken']:
         token_data = config.read_token()
         assert(token_data)
-        print(u'\u2714', "Token is valid for use.")
+        print("Token is valid for use.")
 
     if argv['getteams']and argv['--save']:
-        gt = Teams()
+        gt = Teams(verbose)
         gt.get_teams(save_config=True)
-        print(u'\u2714', "Team Structure saved.")
+        print("Team Structure saved.")
     
     if argv['getteams']:
-        gt = Teams()
+        gt = Teams(verbose)
         sys.stdout.flush()
         sys.stdout.write(str(gt.get_teams()))
     
     if argv['updateroles']:
-        gt = Teams()
+        gt = Teams(verbose)
         gt.update_ac_roles()
     
     if argv['getroles']:
-        gt = Teams()
+        gt = Teams(verbose)
         gt.save_ac_roles()
     
     if argv['updateteams']:
-        gt = Teams()
+        gt = Teams(verbose)
         gt.update_teams()
 
 

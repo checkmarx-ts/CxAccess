@@ -17,9 +17,9 @@ tests_require=[
 ]
 
 setup(
-    name='cxacclient',
+    name='cxaccess',
     version=_version,
-    description='Checkmarx CxSAST 9.0 Access Control Client',
+    description='Checkmarx CxSAST 9.0 Access Control Client LDAP Automation',
     url='https://github.com/checkmarx-ts/CxAcClient',
     author='Checkmarx TS-APAC',
     author_email='TS-APAC-PS@checkmarx.com',
@@ -31,13 +31,13 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     keywords='Checkmarx AccessContorl Automation',
-    packages=['cxacclient', 'cxacclient.auth', 'cxacclient.utils', 'cxacclient.teams'],
+    packages=['cxaccess', 'cxaccess.auth', 'cxaccess.utils', 'cxaccess.teams'],
     python_requires='>=3.7',
     install_requires=install_requires,
     extras_require={
         'tests': install_requires + tests_require,
     },
-    package_data={'cxacclient': ['templates/*']},
-    entry_points={'console_scripts': ['cxacclient=cxacclient.cxacclient:main']}
+    package_data={'cxaccess': ['templates/*']},
+    entry_points={'console_scripts': ['cxaccess=cxaccess.cxaccess:main']}
 
 )

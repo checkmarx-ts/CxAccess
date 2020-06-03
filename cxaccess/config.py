@@ -6,7 +6,7 @@ from os.path import isfile
 from os import mkdir as create_directory
 import yaml
 from yaspin import yaspin
-from cxacclient.utils.connections import Connection
+from cxaccess.utils.connections import Connection
 
 # To-Do: De-duplicate read-write methods to a factory
 # Reserving this for now as a future todo.
@@ -16,9 +16,10 @@ class Config(Connection):
     Config depends on connection to make a predictable MRO only.
     However, MRO is being abused here to make connection available universally.
     """
-    @yaspin(text="Checking Configuration", color="red")
-    def __init__(self):
-        super().__init__()
+    @yaspin(text="Checking Configuration")
+    def __init__(self, verbose):
+        super().__init__(verbose)
+        self.verbose = verbose
         self.config_path = Path.joinpath(Path().home(), ".cx")
         self.providers_config = self.config_path / "providers.yaml"
         self.team_config = self.config_path / "team.yaml"
@@ -27,7 +28,8 @@ class Config(Connection):
         self.update_ldap_roles_config = self.config_path / "updateLdapRoles.yaml"
         self.read_update_teams_config = self.config_path / "updateTeams.yaml"
         self.ldap_provider_id = 1
-    
+
+    @yaspin(text="path")
     def check_path(self):
         """
         Implicit check
@@ -74,6 +76,7 @@ class Config(Connection):
             return
 
     # To-Do Get rid of these duplicated saves with a dict get config file path
+    @yaspin(text="Saving Config")
     def save_cxconfig(self, meta):
         """
         Save CxServer config - SSL, Host
@@ -82,6 +85,7 @@ class Config(Connection):
             print("Saving CxConfig at: {0}".format(self.cx_config))
             file_dump = yaml.dump(meta, cx_config_writer)
     
+    @yaspin(text="Saving Config")
     def save_providers(self, meta):
         """
         Save Cx Auth Providers to providers.yaml
@@ -90,6 +94,7 @@ class Config(Connection):
             print("Cx Auth providers: {0}".format(self.providers_config))
             file_dump = yaml.dump(meta, provides_writer)
 
+    @yaspin(text="Saving token")
     def save_token(self, meta):
         """
         Save OAuth Token to Configuration directory
@@ -101,6 +106,7 @@ class Config(Connection):
             print("Token is at: {0}".format(self.token_config))
             file_dump = yaml.dump(meta, token_writer)
     
+    @yaspin(text="Saving teams")
     def save_teams_config(self, meta):
         """
         Save teams to team_config.yaml
@@ -109,6 +115,7 @@ class Config(Connection):
             print("Saving teams: {0}".format(self.team_config))
             file_dump = yaml.dump(meta, team_config_writer)
 
+    @yaspin(text="Reading Token")
     def read_token(self):
         """
         Read token from config
@@ -128,6 +135,7 @@ class Config(Connection):
             print("P")
             raise FileExistsError
 
+    @yaspin(text="Reading config")
     def read_cx_config(self):
         """
         Read CxConfig from config
@@ -137,6 +145,7 @@ class Config(Connection):
             print("Reading config from here: {0}".format(self.cx_config))
             return yaml.full_load(cx_config_reader)
     
+    @yaspin(text="Reading config")
     def read_providers_config(self):
         """
         Read Providers from config
@@ -146,6 +155,7 @@ class Config(Connection):
             print("Reading providers from disk: {0}".format(self.providers_config))
             return yaml.full_load(providers_reader)
     
+    @yaspin(text="Reading config")
     def read_update_ldap_config(self):
         """
         Read YAML for updating LDAP Roles
@@ -156,6 +166,7 @@ class Config(Connection):
             print("Reading LDAP roles: {0}".format(self.update_ldap_roles_config))
             return yaml.full_load(update_ldap_reader)
     
+    @yaspin(text="Reading config")
     def write_update_ldap_config(self, meta):
         """
         Read YAML for updating LDAP Roles
@@ -166,6 +177,7 @@ class Config(Connection):
             print("Writing LDAP Config to: {0}".format(self.update_ldap_roles_config))
             file_dump = yaml.dump(meta, update_ldap_writer)
 
+    @yaspin(text="Reading config")
     def read_update_teams(self):
         """
         Read YAML to update teams
@@ -174,6 +186,7 @@ class Config(Connection):
             print("Reading: {0}".format(self.read_update_teams_config))
             return yaml.full_load(read_update_teams)
 
+    @yaspin(text="Reading config")
     def get_ldap_providers_config(self):
         """
         Get LDAP Providers from config file
