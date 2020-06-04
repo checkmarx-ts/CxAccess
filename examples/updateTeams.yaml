@@ -1,0 +1,6 @@
+Galaxy Wars:
+- xmen: CN=xmen,CN=Users,DC=cx,DC=AU
+- Star Wars: CN=Star Wars,CN=Users,DC=cx,DC=AU
+mutants:
+- xmen: CN=xmen,CN=Users,DC=cx,DC=AU
+- Star Wars: CN=Star Wars,CN=Users,DC=cx,DC=AU

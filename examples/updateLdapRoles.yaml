@@ -1,0 +1,9 @@
+SAST Scanner:
+- CN=Star Wars,CN=Users,DC=cx,DC=au
+- CN=xmen,CN=Users,DC=cx,DC=au
+SAST Reviewer:
+- CN=Star Wars,CN=Users,DC=cx,DC=au
+- CN=xmen,CN=Users,DC=cx,DC=au
+SAST Auditor:
+- CN=Star Wars,CN=Users,DC=cx,DC=au
+- CN=xmen,CN=Users,DC=cx,DC=au
