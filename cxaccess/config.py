@@ -125,10 +125,12 @@ class Config(Connection):
                     print("Token is valid for: {0} minutes.".format(int(time_gap/60)))
                 if self.verbose and time_gap <= 0:
                     print("Token expired OR is invalid. Please try login with --save")
+                return data['token']
         except Exception as err:
             if self.verbose:
                 print("File is missing. Please try init, then login with --save flag.")
                 raise FileExistsError
+            print("Error in reading token")
             pass
 
     def read_cx_config(self):

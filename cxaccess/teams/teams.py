@@ -135,6 +135,7 @@ class Teams(Config):
         """
         Get All roles on Access Control
         """
+        print("Fetching Checkmarx Roles")
         try:
             response = self.session.request('GET', self.cxac_roles_url, headers=self.headers, verify=self.verify)
 
@@ -168,13 +169,15 @@ class Teams(Config):
         url = "https://{0}/CxRestAPI/auth/Teams".format(self.host)
 
         response = self.session.request('GET', url=url, headers=headers, verify=self.verify)
-
         if response.ok:
             teams = response.json()
             teamid = [team['id'] for team in teams if team['name'].lower() == team_name.lower()]
             if teamid:
                 return teamid[0]
         else:
+            if self.verbose:
+                print("Fetching teams failed")
+                print(response.text)
             print(response.status_code, response.reason)
 
     def update_ac_roles(self):
@@ -238,29 +241,45 @@ class Teams(Config):
 
     def update_teams(self):
         """
-        Add LDAP Group Mappings to Cx Teams
+        Update LDAP Group Mappings to Cx Teams
         """
-        teams = self.read_update_teams()
-        config_teams = []
-       
-        for team in teams:
-            teamId = self.get_team_id(team)
-            ldap_team_maps = teams[team].keys()
-            for ldap_team_map in ldap_team_maps:
-                config_teams.append({
-                    "teamId": teamId,
-                    "ldapGroupDisplayName": ldap_team_map,
-                    "ldapGroupDn": teams[team][ldap_team_map]
-                })
-        config_teams = json.dumps(config_teams)
-        headers = self.headers
-        headers['Content-Type'] = 'application/json;v=1.0'
+        try:
+            teams_update = self.read_update_teams()
+            cx_teams = list(teams_update.keys())
+            config_teams = []
+
+            # Each team here is a checkmarx team
+            # Get the Team ID 
+
+            for team in cx_teams:
+                teamId = self.get_team_id(team)
+                
+                if self.verbose and not teamId:
+                    print("Error: Team {0} does not exist".format(team))
+                
+                
+                for index, ldap_team_map in enumerate(teams_update[team]):
+                    dnName = list(ldap_team_map.keys())[0]
+                    config_teams.append({
+                        "teamId": teamId,
+                        "ldapGroupDisplayName": dnName,
+                        "ldapGroupDn": teams_update[team][index][dnName]
+                    })
+
+            config_teams = json.dumps(config_teams)
+            headers = self.headers
+            headers['Content-Type'] = 'application/json;v=1.0'
+            
+            url = "https://{0}/CxRestApi/auth/LDAPServers/{1}/TeamMappings".format(self.host, self.ldap_provider_id)
+            response = self.session.request('PUT', url=url, headers=headers, data=config_teams, verify=self.verify)
+            
+            if response.ok:
+                print("teams update succeeded.")
+            else:
+                print(response.reason, response.status_code)
+                print("Roles update failed.")
         
-        url = "https://{0}/CxRestApi/auth/LDAPServers/{1}/TeamMappings".format(self.host, self.ldap_provider_id)
-        response = self.session.request('PUT', url=url, headers=headers, data=config_teams, verify=self.verify)
-        
-        if response.ok:
-            print("teams update succeeded.")
-        else:
-            print(response.reason, response.status_code)
-            print("Roles update failed.")
+        except Exception as err:
+            if self.verbose:
+                print(err)
+            print("Could not update teams")
