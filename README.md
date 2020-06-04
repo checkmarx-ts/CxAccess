@@ -6,6 +6,11 @@ Checkmarx Access Control Helper for:
 ---
 
 # Getting Started
+
+## Wiki
 To get started, Please visit the [wiki](https://github.com/checkmarx-ts/CxAccess/wiki/home)
+
+## Installation
+To Install CxAccess, Visit [this section](https://github.com/checkmarx-ts/CxAccess/wiki/Installation).
 
 ---
