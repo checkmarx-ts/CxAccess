@@ -6,7 +6,8 @@ Checkmarx Access Control Helper for:
 
 ## Purpose
 CxAccess helps with access management on Checkmarx more easier.
-1. You can assign multiple LDAP Groups to a Checkmarx team.
+1. Assign multiple LDAP Groups to a Checkmarx team with `updateteams`
+2. Assign a Checkmarx role to multiple LDAP Groups with `updateteams`.
 
 --- 
 
