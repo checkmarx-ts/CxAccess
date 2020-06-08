@@ -2,6 +2,7 @@
 Checkmarx Access Control Helper for:
 1. Manage Complex Users-Teams-Roles Structure with ease via CLI.
 2. Perform Access Control Administrative tasks via CLI.
+3. Automate (Either as a cron or as API) the process of roles assignment.
 
 
 ## Purpose
