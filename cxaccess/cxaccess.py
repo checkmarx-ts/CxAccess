@@ -17,7 +17,6 @@ login           Authenticate user on Checkmarx
 checktoken      Check token as unexpired. (Requires login --save to be used prior. )  
 getroles        Fetch available roles locally
 updateroles     Update LDAP Roles - Advanced Role Mapping. This replaces all existing roles
-fetchteams      Fetch teams with otpion to save
 updateteams     Update LDAP Mappings to CxSAST Teams.
 
 Options:
