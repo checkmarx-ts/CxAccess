@@ -1,6 +1,6 @@
 from setuptools import setup
 
-_version = '0.0.8'
+_version = '0.0.9'
 
 install_requires=[
     'PyInquirer',
@@ -19,7 +19,7 @@ setup(
     name='cxaccess',
     version=_version,
     description='Checkmarx CxSAST 9.0 Access Control Client LDAP Automation',
-    url='https://github.com/checkmarx-ts/CxAcClient',
+    url='https://github.com/checkmarx-ts/CxAccess',
     author='Checkmarx TS-APAC',
     author_email='TS-APAC-PS@checkmarx.com',
     classifiers=[
