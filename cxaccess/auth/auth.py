@@ -22,8 +22,9 @@ class Auth(Config):
         self.client_id = str()
         # Default to CxAC Only API Scope
         self.scope = "access_control_api"
+        self.logger.info("Login scope is: {0}".format(self.scope))
         self.base_url = "https://{0}/cxrestapi/auth{1}"
-
+        self.logger.info("Base URI: {0}".format(self.base_url))
         self.headers = {
             'Accept': 'application/json;v=1.0',
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -43,9 +44,12 @@ class Auth(Config):
             },
         ]
         host_answers = prompt(host_questions)
+        self.logger.info("Host Answers")
+        self.logger.info(host_answers)
         if self.verbose:
             print(host_answers)
             print("Host: {0}".format(host_answers['host']))
+            self.logger.info("Host: {0}".format(host_answers['host']))
         self.host = host_answers['host']
     
     def set_scope(self):
@@ -80,7 +84,8 @@ class Auth(Config):
         # scope_answers = prompt(scope_questions)
         # scope_answers = scope_answers['Privileges Choice']
         # self.scope = " ".join([scope_map[scope_answer] for scope_answer in scope_answers if scope_answer in scope_map])
-
+        # self.logger.info("Scope info")
+        # self.logger.info(scope_answers)
         if not self.scope:
             self.scope = 'access_control_api'
 
@@ -98,6 +103,7 @@ class Auth(Config):
                 response = self.session.get(url=url, verify=False)
                 return False
             except Exception as err:
+                self.logger.info("error in connecting to: {0}", url)
                 print("Unable to connect to {0}. Please check if host is accessible/available.".format(self.host))
                 exit()
 
@@ -116,6 +122,8 @@ class Auth(Config):
                 }
             ]
             ssl_answer = prompt(ssl_questions)
+            self.logger.info("SSL Options")
+            self.logger.info(ssl_answer)
             if self.verbose:
                 print(ssl_answer)
             self.verify = not ssl_answer['sslVerify']
@@ -134,15 +142,15 @@ class Auth(Config):
         client_id_map = {
             'Use Default Client': 'resource_owner_client'
         }
-
         # Uncomment this only if using a non-default custom client.
         # This will promt for the client ID on the console.
         # client_id_answers = prompt(client_id_questions)
         # self.client_id = client_id_map[client_id_answers['client_id']]
-
+        # self.logger.info("ClientID: {0}".format(self.client_id))
         # Comment this below if uncommenting above
         if self.verbose:
             print("client ID: ", self.client_id)
+            self.logger.info("Client ID: {0}".format(self.client_id))
         self.client_id = client_id_map['Use Default Client']
     
     def ask_domain(self):
@@ -153,11 +161,9 @@ class Auth(Config):
         response = self.session.request('GET', url=auth_providers_url, verify=self.verify)
         if not response.ok:
             raise Exception
-
         # Write providers
         auth_providers = response.json()
         self.save_providers(meta=auth_providers)
-
         auth_provider_questions = [
             {
                 'type': 'checkbox',
@@ -181,14 +187,13 @@ class Auth(Config):
         self.auth_provider = auth_provider_answers['provider'][0]
         if self.verbose:
             print("Using Auth Provider: {0}".format(self.auth_provider))
+            self.logger.info("Auth Provider chosen")
+            self.logger.info(self.auth_provider)
 
     def ask_creds(self):
         domain_append = 'CxSastUser'
-
-        print(self.auth_provider)
         if self.auth_provider != 'Application':
             domain_append = "{0}\\".format(self.auth_provider)
-        
         auth_questions = [
                             {
                                 'type': 'input',
@@ -203,7 +208,7 @@ class Auth(Config):
                                 'name': 'password'
                             }
                         ]
-        
+        self.logger.info("Authentication")
         return prompt(auth_questions)
         
     def perform_auth(self, save_config=False):
@@ -217,24 +222,26 @@ class Auth(Config):
         self.check_ssl_verification()
         self.ask_domain()
         creds = self.ask_creds()
-
         ###################
         # Do not log this #
         ###################
         payload = self.auth_payload.format(creds['username'], creds['password'], self.scope, self.client_id)
         auth_url = self.base_url.format(self.host, "/identity/connect/token")
-        
         try:
             token_type, token_raw, token_decoded = None, None, None
             response = self.session.request("POST", auth_url, headers=self.headers, data = payload, verify=self.verify)
             if response.ok:
-                print("Authentication successfull.")
+                self.logger.info("Authentication successful.")
                 token_type, token_raw = response.json()['token_type'], response.json()['access_token']
                 self.token = "{0} {1}".format(token_type, token_raw)
                 # Decode token and print expiry
                 # Do not save token to disk
                 token_decoded = jwt.decode(token_raw, verify=False)
                 print("Token expires by: {0} ({1} Hours).".format(
+                    datetime.fromtimestamp(token_decoded['exp']),
+                    int((int(token_decoded['exp']) - int(time.time()))/(3600))
+                ))
+                self.logger.info("Token expires by: {0} ({1} Hours).".format(
                     datetime.fromtimestamp(token_decoded['exp']),
                     int((int(token_decoded['exp']) - int(time.time()))/(3600))
                 ))
@@ -245,14 +252,17 @@ class Auth(Config):
                     meta = {'host': self.host, 'ssl_verify': self.verify, 'auth_provider': self.auth_provider}
                     self.save_cxconfig(meta=meta)
                     print("Cx Config saved at' : self.cx_config")
-
+                    self.logger.info("Cx Config saved at' : self.cx_config")
             else:
                 # To-DO: Log Error
                 print("Authentication unsuccessful.")
                 if self.verbose:
                     print(response.text)
+                    self.logger.error(response.text)
             
         except requests.exceptions.RequestException as http_err:
             # To-Do: Log error
             print(" General Error occured. Status: {0}".format(response.status_code))
+            self.logger.error(" General Error occured. Status: {0}".format(response.status_code))
+            self.logger.error("Details: {0}".format(response.text))
         creds = {}

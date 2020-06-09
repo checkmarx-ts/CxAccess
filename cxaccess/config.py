@@ -20,7 +20,7 @@ class Config(Connection):
         super().__init__(verbose)
         self.verbose = verbose
         self.config_path = Path.joinpath(Path().home(), ".cx")
-        # Logger 
+        # Logger
         self.log_path = Path.joinpath(self.config_path, "logs")
         self.logfile_path = self.log_path / "cxaccess.log"
 
@@ -30,11 +30,9 @@ class Config(Connection):
         self.cx_config = self.config_path / "cx.yaml"
         self.update_ldap_roles_config = self.config_path / "updateLdapRoles.yaml"
         self.read_update_teams_config = self.config_path / "updateTeams.yaml"
-
         # Setting this as default for LDAP Provider ID
         # This may require clean-up if multiple LDAP connections are to be used.
         self.ldap_provider_id = 1
-        
         # Enable this first - So that log file is available or created
         self.check_path()
         # Logger
@@ -146,13 +144,18 @@ class Config(Connection):
                 time_gap = int(data['exp']) - int(time.time())
                 if self.verbose and time_gap > 0:
                     print("Token is valid for: {0} minutes.".format(int(time_gap/60)))
+                    self.logger.info("Token is valid for: {0} minutes.".format(int(time_gap/60)))
                 if self.verbose and time_gap <= 0:
                     print("Token expired OR is invalid. Please try login with --save")
+                    self.logger.error("Token expired OR is invalid. Please try login with --save")
                 return data['token']
         except Exception as err:
             if self.verbose:
                 print("File is missing. Please try init, then login with --save flag.")
+                self.logger.debug("File is missing. Please try init, then login with --save flag.")
                 raise FileExistsError
+
+            self.logger.error("Error in reading token")
             print("Error in reading token")
             pass
 
@@ -163,6 +166,7 @@ class Config(Connection):
         with open(self.cx_config, 'r') as cx_config_reader:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
             print("Reading config from here: {0}".format(self.cx_config))
+            self.logger.info("Reading config from here: {0}".format(self.cx_config))
             return yaml.full_load(cx_config_reader)
     
     def read_providers_config(self):
@@ -172,6 +176,7 @@ class Config(Connection):
         with open(self.providers_config, 'r') as providers_reader:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
             print("Reading providers from disk: {0}".format(self.providers_config))
+            self.logger.info("Reading providers from disk: {0}".format(self.providers_config))
             return yaml.full_load(providers_reader)
     
     def read_update_ldap_config(self):
@@ -182,6 +187,7 @@ class Config(Connection):
         with open(self.update_ldap_roles_config, 'r') as update_ldap_reader:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
             print("Reading LDAP roles: {0}".format(self.update_ldap_roles_config))
+            self.logger.info("Reading LDAP roles: {0}".format(self.update_ldap_roles_config))
             return yaml.full_load(update_ldap_reader)
     
     def write_update_ldap_config(self, meta):
@@ -192,6 +198,7 @@ class Config(Connection):
         with open(self.update_ldap_roles_config, 'w') as update_ldap_writer:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
             print("Writing LDAP Config to: {0}".format(self.update_ldap_roles_config))
+            self.logger.info("Writing LDAP Config to: {0}".format(self.update_ldap_roles_config))
             file_dump = yaml.dump(meta, update_ldap_writer)
 
     def read_update_teams(self):
@@ -200,6 +207,7 @@ class Config(Connection):
         """
         with open(self.read_update_teams_config, 'r') as read_update_teams:
             print("Reading: {0}".format(self.read_update_teams_config))
+            self.logger.info("Reading: {0}".format(self.read_update_teams_config))
             return yaml.full_load(read_update_teams)
 
     def get_ldap_providers_config(self):
@@ -212,5 +220,6 @@ class Config(Connection):
         
         if ldap_provider_ids:
             print("LDAP Provider is now set")
+            self.logger.info("LDAP Provider is now set")
             # Default to the first LDAP Provider ID
             self.ldap_provider_id = ldap_provider_ids[0]

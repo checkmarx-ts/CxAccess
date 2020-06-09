@@ -13,6 +13,7 @@ class Teams(Config):
         config = self.read_cx_config()
         if not config:
             print("Please check configuration files")
+            self.logger.error("Please check configuration files")
             raise NotImplemented
         self.token = "Bearer {0}".format(self.read_token())
         self.payload = {}
@@ -30,8 +31,8 @@ class Teams(Config):
         self.ldap_role_mappings = list()
         self.get_ac_roles()
         self.get_ldap_team_mappings()
-        
         self.get_ldap_role_mappings()
+        self.logger.info("Teams module initialized")
     
     def roles_team_helper(self, ldap_team_mappings):
         """
@@ -65,6 +66,7 @@ class Teams(Config):
         """
         response = self.session.request("GET", self.teams_url, data=self.payload, headers=self.headers, verify=self.verify)
         if response.ok:
+            self.logger.info("URL: {0}", self.teams_url)
             # Trusting response.json implicitly
             teams_data = response.json()          
             meta_teams_data = list()
@@ -83,6 +85,7 @@ class Teams(Config):
                 return meta_teams_data
         else:
             print("Teams fetch unsuccessful")
+            self.logger.error("error in fetching teams. Response: {0}".format(response.text))
 
     def get_team_members(self, team_id):
         """
@@ -103,7 +106,7 @@ class Teams(Config):
             else:
                 return
         except Exception as err:
-            #To-DO: Log err
+            self.logger.error("Error. {0}".format(err))
             return
 
     def get_ldap_team_mappings(self):
@@ -120,7 +123,7 @@ class Teams(Config):
                 self.ldap_team_mappings.extend(response.json())
 
         except Exception as err:
-            # To-Do: Log err
+            self.logger.error("Error. {0}".format(err))
             raise Exception
 
     def get_ldap_role_mappings(self):
@@ -138,10 +141,10 @@ class Teams(Config):
                     self.ldap_role_mappings.append(x)
 
             else:
-                # To-Do: Log err
+                self.logger.error("Error. {0}".format(response.text))
                 print(response.status_code, response.reason)
         except Exception as err:
-            # To-Do: Log err
+            self.logger.error("Error. {0}".format(err))
             raise Exception
 
     def get_ac_roles(self):
@@ -157,9 +160,9 @@ class Teams(Config):
             else:
                 print(response.status_code, response.reason)
                 print(response.json()['Message'])
-                    
+                self.logger.error(response.text)     
         except Exception as err:
-            # To-Do: Log err
+            self.logger.error("Error. {0}".format(err))
             raise Exception
     
     def get_role_name(self, roleId):
@@ -192,14 +195,13 @@ class Teams(Config):
                 print("Fetching teams failed")
                 print(response.text)
             print(response.status_code, response.reason)
+            self.logger.error(response.text)
 
     def update_ac_roles(self):
         """
         Update roles
         """
         ldap_role_updates = self.read_update_ldap_config()
-        print("STD")
-        print(ldap_role_updates)
         headers = self.headers
         headers['Content-Type'] = 'application/json;v=1.0'
 
@@ -230,6 +232,7 @@ class Teams(Config):
         else:
             print(response.reason, response.status_code)
             print("Roles update failed.")
+            self.logger.error(response.text)
 
     def save_ac_roles(self, save_config):
         """
@@ -249,10 +252,13 @@ class Teams(Config):
                 })
             self.write_update_ldap_config(config_roles)
             print("Roles save succeeded.")
+            self.logger.info("Roles saved")
         else:
             print(response.reason, response.status_code)
             print(response.text)
             print("Roles save failed.")
+            self.logger.error("Roles save failed")
+            self.logger.error(response.text)
 
     def update_teams(self):
         """
@@ -293,8 +299,10 @@ class Teams(Config):
             else:
                 print(response.reason, response.status_code)
                 print("Roles update failed.")
+                self.logger.error(response.text)
         
         except Exception as err:
             if self.verbose:
                 print(err)
+            self.logger.error(err)
             print("Could not update teams")
