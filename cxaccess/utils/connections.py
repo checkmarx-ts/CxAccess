@@ -11,4 +11,5 @@ class Connection(object):
     """
     def __init__(self, verbose):
         super().__init__()
+        self.verbose = verbose
         self.session = requests.Session()

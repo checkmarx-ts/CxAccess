@@ -24,4 +24,12 @@ CxAccess helps with access management on Checkmarx more easier.
 - The feature `updateroles` uses yaml file to update roles on Checkmarx. The contents of the yaml file are the effective roles that are published to `checkmarx`.
 
 - To Observer changes from `updateroles`, Navigate to Checkmarx Access Control at `https://<fqdn>/CxRestApi/auth` and authenticate. After you authenticate, Visit, LDAP Settings and find the changes under Advanced LDAP Roles mappping.
+
+
+## Docker
+- At this stage, Dockerfile is for testing changes in code quickly.
+- This Dockerfile can be extended to run `cxaccess` toolkit, However, care must be taken to provide the yaml files.
+- Please consider `fakeroot` if you use this dockerfile beyond testing code changes.
+- Build command `docker build -t cxaccess:0.0.8 path/to/dockerfile`.
+- Run command `docker run -it cxaccess`.
 ---

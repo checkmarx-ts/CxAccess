@@ -1,3 +1,5 @@
+import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import time
 from os.path import exists as path_exists
@@ -6,7 +8,6 @@ from os.path import isfile
 from os import mkdir as create_directory
 import yaml
 from cxaccess.utils.connections import Connection
-
 # To-Do: De-duplicate read-write methods to a factory
 # Reserving this for now as a future todo.
 
@@ -19,16 +20,31 @@ class Config(Connection):
         super().__init__(verbose)
         self.verbose = verbose
         self.config_path = Path.joinpath(Path().home(), ".cx")
+        # Logger 
         self.log_path = Path.joinpath(self.config_path, "logs")
+        self.logfile_path = self.log_path / "cxaccess.log"
+
+        # Setup paths
         self.providers_config = self.config_path / "providers.yaml"
         self.team_config = self.config_path / "team.yaml"
         self.token_config = self.config_path / "token.yaml"
         self.cx_config = self.config_path / "cx.yaml"
         self.update_ldap_roles_config = self.config_path / "updateLdapRoles.yaml"
         self.read_update_teams_config = self.config_path / "updateTeams.yaml"
+
         # Setting this as default for LDAP Provider ID
         # This may require clean-up if multiple LDAP connections are to be used.
         self.ldap_provider_id = 1
+        
+        # Enable this first - So that log file is available or created
+        self.check_path()
+        # Logger
+        self.logger = logging.getLogger('CxAccess')
+        logging.basicConfig(handlers=[RotatingFileHandler(self.logfile_path, maxBytes=100000, backupCount=10)],
+                            level=logging.DEBUG if self.verbose else logging.INFO,
+                            format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
+                            datefmt='%Y-%m-%dT%H:%M:%S'
+                           )
 
     def check_path(self):
         """
@@ -38,12 +54,12 @@ class Config(Connection):
         """
         # To-Do: Loop over as the list has grown. Make this more pythonic.
         config_dirs = [self.config_path, self.log_path]
-
         config_files = [self.providers_config, self.team_config, self.token_config, self.cx_config,
-                        self.read_update_teams_config, self.update_ldap_roles_config
+                        self.read_update_teams_config, self.update_ldap_roles_config, self.logfile_path
                        ]
         
         try:
+            # Config Dirs
             for config_dir in config_dirs:
                 if not path_exists(config_dir) or not isdir(config_dir):
                     if self.verbose:
@@ -52,7 +68,8 @@ class Config(Connection):
                 else:
                     if self.verbose:
                         print("Directory exists at: {0}".format(config_dir))
-                
+            
+            # Config Files
             for config_file in config_files:
                 if not path_exists(config_file):
                     if self.verbose:
@@ -68,6 +85,7 @@ class Config(Connection):
 
         except Exception as err:
             print("Config files do no exist. Please run cxclient init OR cxclient login --save.")
+            self.logger.info("Config files failure or absense of token.")
             if self.verbose:
                 print(err)
             return
@@ -78,6 +96,7 @@ class Config(Connection):
         """
         with open(self.cx_config, 'w') as cx_config_writer:
             print("Saving CxConfig at: {0}".format(self.cx_config))
+            self.logger.info("Saving CxConfig at: {0}".format(self.cx_config))
             file_dump = yaml.dump(meta, cx_config_writer)
     
     def save_providers(self, meta):
@@ -86,6 +105,7 @@ class Config(Connection):
         """
         with open(self.providers_config, 'w') as provides_writer:
             print("Cx Auth providers: {0}".format(self.providers_config))
+            self.logger.info("Cx Auth providers: {0}".format(self.providers_config))
             file_dump = yaml.dump(meta, provides_writer)
 
     def save_token(self, meta):
@@ -97,6 +117,7 @@ class Config(Connection):
         # Always write mode to Update from Cx.
         with open(self.token_config, 'w') as token_writer:
             print("Token is at: {0}".format(self.token_config))
+            self.logger.info("Token is at: {0}".format(self.token_config))
             file_dump = yaml.dump(meta, token_writer)
     
     def save_teams_config(self, meta):
@@ -105,6 +126,7 @@ class Config(Connection):
         """
         with open(self.team_config, 'w') as team_config_writer:
             print("Saving teams: {0}".format(self.team_config))
+            self.logger.info("Token is at: {0}".format(self.token_config))
             file_dump = yaml.dump(meta, team_config_writer)
 
     def read_token(self):

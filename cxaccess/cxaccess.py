@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 '''Usage: 
 {0} init [--verbose]
 {0} login [--save] [--verbose]
@@ -34,7 +36,7 @@ from cxaccess.config import Config
 from cxaccess.teams.teams import Teams
 
 
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 
 def main(sysargv=None):
     argv = docopt.docopt(
