@@ -26,7 +26,7 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: System Administrators',
         'Topic :: Software Development :: Build Tools',
-        'License :: OSI Approved :: APACHE-2.0',
+        'License :: OSI Approved :: GPL-3.0-only',
         'Programming Language :: Python :: 3.8',
     ],
     keywords='Checkmarx AccessContorl Automation',
