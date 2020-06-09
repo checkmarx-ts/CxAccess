@@ -66,7 +66,7 @@ class Teams(Config):
         """
         response = self.session.request("GET", self.teams_url, data=self.payload, headers=self.headers, verify=self.verify)
         if response.ok:
-            self.logger.info("URL: {0}", self.teams_url)
+            self.logger.info("URL: {0}".format(self.teams_url))
             # Trusting response.json implicitly
             teams_data = response.json()          
             meta_teams_data = list()
@@ -204,7 +204,6 @@ class Teams(Config):
         ldap_role_updates = self.read_update_ldap_config()
         headers = self.headers
         headers['Content-Type'] = 'application/json;v=1.0'
-
         ###################################
         ### Change 1 to Dynamic values ###
         ##################################
