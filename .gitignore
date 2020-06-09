@@ -3,3 +3,5 @@ cxaccess.egg-info/
 *.test.yml
 build/
 dist/
+pylint.txt
+.vscode/
