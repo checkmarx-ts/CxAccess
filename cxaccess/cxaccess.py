@@ -4,7 +4,7 @@
 {0} init [--verbose]
 {0} login [--save] [--verbose]
 {0} checktoken [--verbose]
-{0} getroles [--verbose]
+{0} getroles [--save] [--verbose]
 {0} updateroles [--verbose]
 {0} getteams [--save] [--verbose]
 {0} updateteams [--verbose]
@@ -75,20 +75,25 @@ def main(sysargv=None):
     if argv['getteams']and argv['--save']:
         gt = Teams(verbose)
         gt.get_teams(save_config=True)
-        print("Team Structure saved.")
     
-    if argv['getteams']:
+    # Can be optimized with the --save flag directly as boolean above
+    if argv['getteams'] and not argv['--save']:
         gt = Teams(verbose)
         sys.stdout.flush()
-        sys.stdout.write(str(gt.get_teams()))
+        sys.stdout.write(str(gt.get_teams(save_config=False)))
     
     if argv['updateroles']:
         gt = Teams(verbose)
         gt.update_ac_roles()
     
-    if argv['getroles']:
+    if argv['getroles'] and argv['--save']:
         gt = Teams(verbose)
-        gt.save_ac_roles()
+        gt.save_ac_roles(save_config=True)
+
+    # Can be optimized with the --save flag directly as boolean above
+    if argv['getroles'] and not argv['--save']:
+        gt = Teams(verbose)
+        gt.save_ac_roles(save_config=False)
     
     if argv['updateteams']:
         gt = Teams(verbose)

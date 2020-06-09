@@ -26,7 +26,6 @@ class Config(Connection):
 
         # Setup paths
         self.providers_config = self.config_path / "providers.yaml"
-        self.team_config = self.config_path / "team.yaml"
         self.token_config = self.config_path / "token.yaml"
         self.cx_config = self.config_path / "cx.yaml"
         self.update_ldap_roles_config = self.config_path / "updateLdapRoles.yaml"
@@ -54,7 +53,7 @@ class Config(Connection):
         """
         # To-Do: Loop over as the list has grown. Make this more pythonic.
         config_dirs = [self.config_path, self.log_path]
-        config_files = [self.providers_config, self.team_config, self.token_config, self.cx_config,
+        config_files = [self.providers_config, self.token_config, self.cx_config,
                         self.read_update_teams_config, self.update_ldap_roles_config, self.logfile_path
                        ]
         
@@ -124,9 +123,11 @@ class Config(Connection):
         """
         Save teams to team_config.yaml
         """
-        with open(self.team_config, 'w') as team_config_writer:
-            print("Saving teams: {0}".format(self.team_config))
-            self.logger.info("Token is at: {0}".format(self.token_config))
+        with open(self.read_update_teams_config, 'w') as team_config_writer:
+            
+            if self.verbose:
+                self.logger.info("Token is at: {0}".format(self.token_config))
+                print("Saving teams: {0}".format(self.update_ldap_roles_config))
             file_dump = yaml.dump(meta, team_config_writer)
 
     def read_token(self):

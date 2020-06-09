@@ -43,30 +43,43 @@ class Teams(Config):
             roles = [x['role'] for x in self.ldap_role_mappings if x['ldapGroupDn'] in ldap_dn_list]
         return roles
 
-    def get_teams(self, save_config=False):
+    def iterate_team_ldap_mappings(self, data):
+        # For teams that do no have LDAP Mappings
+        if data == [] or not data:
+            return []
+        # For teams that have existing LDAP mapping
+        config_data = []
+        for d in data:
+            config_data.append({d['ldapGroupDisplayName']: d['ldapGroupDn']})
+        return config_data
+    
+    def prepare_team_data_write_meta(self, data):
+        meta_config = dict()
+        for d in data:
+            meta_config.update({d["name"]: self.iterate_team_ldap_mappings(data=d['ldap_team_mappings']) })
+        return meta_config
+    
+    def get_teams(self, save_config):
         """
         Fetch all teams on CxAC
         """
         response = self.session.request("GET", self.teams_url, data=self.payload, headers=self.headers, verify=self.verify)
         if response.ok:
             # Trusting response.json implicitly
-            teams_data = response.json()
-            
+            teams_data = response.json()          
             meta_teams_data = list()
             # Maybe i should not do list-comprehension here to keep it readable (Maybe not)
             for team in teams_data:
                 team['members'] = self.get_team_members(team_id=team['id'])
                 team['ldap_team_mappings'] = [x for x in self.ldap_team_mappings if x['teamId']==team['id']]
                 team['roles'] = self.roles_team_helper(ldap_team_mappings=team['ldap_team_mappings'])
-                
                 meta_teams_data.append(team)
 
             if save_config:
-                self.save_teams_config(meta=meta_teams_data)
+                self.save_teams_config(meta=self.prepare_team_data_write_meta(meta_teams_data))
                 print("Teams config fetch successfull.")
                 return True
             else:
-                print("Not saving")
                 return meta_teams_data
         else:
             print("Teams fetch unsuccessful")
@@ -185,6 +198,8 @@ class Teams(Config):
         Update roles
         """
         ldap_role_updates = self.read_update_ldap_config()
+        print("STD")
+        print(ldap_role_updates)
         headers = self.headers
         headers['Content-Type'] = 'application/json;v=1.0'
 
@@ -216,7 +231,7 @@ class Teams(Config):
             print(response.reason, response.status_code)
             print("Roles update failed.")
 
-    def save_ac_roles(self):
+    def save_ac_roles(self, save_config):
         """
         GET AC Roles and save to config
         """
@@ -265,7 +280,7 @@ class Teams(Config):
                         "ldapGroupDisplayName": dnName,
                         "ldapGroupDn": teams_update[team][index][dnName]
                     })
-
+            
             config_teams = json.dumps(config_teams)
             headers = self.headers
             headers['Content-Type'] = 'application/json;v=1.0'
