@@ -12,4 +12,6 @@ class Connection(object):
     def __init__(self, verbose):
         super().__init__()
         self.verbose = verbose
+        self.adapter = requests.adapters.HTTPAdapter(max_retries=3)
         self.session = requests.Session()
+        self.session.mount("https://", self.adapter)

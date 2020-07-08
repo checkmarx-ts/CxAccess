@@ -163,7 +163,6 @@ class Auth(Config):
             raise Exception
         # Write providers
         auth_providers = response.json()
-        self.save_providers(meta=auth_providers)
         auth_provider_questions = [
             {
                 'type': 'checkbox',
@@ -180,11 +179,22 @@ class Auth(Config):
         for auth_provider in auth_providers:
             auth_provider_questions[0]['choices'].append({'name': auth_provider['name']})
         
+        # Default to Application user if no option is chosen.
+        # When choosing options, User has to hit space-bar.
         auth_provider_answers = prompt(auth_provider_questions)
         if len(auth_provider_answers['provider']) == 0:
             auth_provider_answers['provider'].append('Application')
         
         self.auth_provider = auth_provider_answers['provider'][0]
+        
+        save_providers_list = []
+        for auth_provider in auth_providers:
+            if auth_provider['name'] == self.auth_provider:
+                save_providers_list.append(auth_provider)
+        
+        # Save only the ones selected during login.
+        self.save_providers(save_providers_list)
+
         if self.verbose:
             print("Using Auth Provider: {0}".format(self.auth_provider))
             self.logger.info("Auth Provider chosen")

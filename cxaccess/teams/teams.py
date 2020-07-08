@@ -159,7 +159,7 @@ class Teams(Config):
                 self.cxac_roles = [{'id': role['id'], 'name': role['name'] }for role in response.json()]
             else:
                 print(response.status_code, response.reason)
-                print(response.json()['Message'])
+                print(response.json())
                 self.logger.error(response.text)     
         except Exception as err:
             self.logger.error("Error. {0}".format(err))
@@ -219,7 +219,7 @@ class Teams(Config):
         config_roles = json.dumps(config_roles)
         
         headers = self.headers
-        headers['Content-Type'] = 'application/json;v=1.0'
+        headers['Content-Type'] = 'application/json-patch+json;v=1.0'
         
         #########
         ## Remove Static LdapserverID
@@ -230,7 +230,8 @@ class Teams(Config):
             print("Roles Update succeeded.")
         else:
             print(response.reason, response.status_code)
-            print("Roles update failed.")
+            
+            print("Roles update failed")
             self.logger.error(response.text)
 
     def save_ac_roles(self, save_config):
