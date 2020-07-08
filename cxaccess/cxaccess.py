@@ -35,7 +35,7 @@ from cxaccess.config import Config
 from cxaccess.teams.teams import Teams
 
 
-__version__ = '0.0.9'
+__version__ = '0.0.10'
 
 def main(sysargv=None):
     argv = docopt.docopt(
