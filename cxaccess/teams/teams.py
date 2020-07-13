@@ -65,10 +65,10 @@ class Teams(Config):
         Fetch all teams on CxAC
         """
         response = self.session.request("GET", self.teams_url, data=self.payload, headers=self.headers, verify=self.verify)
+        self.logger.info("URL: {0}".format(self.teams_url))
         if response.ok:
-            self.logger.info("URL: {0}".format(self.teams_url))
             # Trusting response.json implicitly
-            teams_data = response.json()          
+            teams_data = response.json()
             meta_teams_data = list()
             # Maybe i should not do list-comprehension here to keep it readable (Maybe not)
             for team in teams_data:
@@ -114,13 +114,12 @@ class Teams(Config):
         Get LDAP Mappings for teams
         """
         self.get_ldap_providers_config()
-
-
         ldap_url = self.ldap_team_mappings_url.format(self.host, self.ldap_provider_id)
         try:
             response = self.session.request('GET', ldap_url, data=self.payload, headers=self.headers, verify=self.verify)
             if response.ok:
-                self.ldap_team_mappings.extend(response.json())
+                data = response.json()
+                self.ldap_team_mappings.extend(data)
 
         except Exception as err:
             self.logger.error("Error. {0}".format(err))
@@ -211,19 +210,24 @@ class Teams(Config):
 
         config_roles = []
 
+        # To use multi-group entry in one-shot
+        # for ldap_role_update in ldap_role_updates:
+        #     config_roles.append({
+        #         'roleId': self.get_role_id(ldap_role_update),
+        #         'ldapGroupDn': ";".join(ldap_role_updates[ldap_role_update])
+        #     })
+
         for ldap_role_update in ldap_role_updates:
-            config_roles.append({
-                'roleId': self.get_role_id(ldap_role_update),
-                'ldapGroupDn': ";".join(ldap_role_updates[ldap_role_update])
-            })
+            for group in ldap_role_updates[ldap_role_update]:
+                config_roles.append({
+                    'roleId': self.get_role_id(ldap_role_update),
+                    'ldapGroupDn': group
+                })
+    
         config_roles = json.dumps(config_roles)
-        
         headers = self.headers
         headers['Content-Type'] = 'application/json-patch+json;v=1.0'
-        
-        #########
-        ## Remove Static LdapserverID
-        #########
+
         url = "https://{0}/CxRestApi/auth/LDAPServers/{1}/RoleMappings".format(self.host, self.ldap_provider_id)
         response = self.session.request('PUT', url=url, headers=headers, data=config_roles, verify=self.verify)
         if response.ok:

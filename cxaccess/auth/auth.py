@@ -163,6 +163,7 @@ class Auth(Config):
             raise Exception
         # Write providers
         auth_providers = response.json()
+        self.save_providers(meta=auth_providers)
         auth_provider_questions = [
             {
                 'type': 'checkbox',
@@ -187,13 +188,13 @@ class Auth(Config):
         
         self.auth_provider = auth_provider_answers['provider'][0]
         
-        save_providers_list = []
-        for auth_provider in auth_providers:
-            if auth_provider['name'] == self.auth_provider:
-                save_providers_list.append(auth_provider)
+        # save_providers_list = []
+        # for auth_provider in auth_providers:
+        #     if auth_provider['name'] == self.auth_provider:
+        #         save_providers_list.append(auth_provider)
         
         # Save only the ones selected during login.
-        self.save_providers(save_providers_list)
+        # self.save_providers(save_providers_list)
 
         if self.verbose:
             print("Using Auth Provider: {0}".format(self.auth_provider))

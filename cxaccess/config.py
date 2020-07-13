@@ -34,7 +34,8 @@ class Config(Connection):
         self.read_update_teams_config = self.config_path / "updateTeams.yaml"
         # Setting this as default for LDAP Provider ID
         # This may require clean-up if multiple LDAP connections are to be used.
-        self.ldap_provider_id = 1
+        self.ldap_provider_id = None
+        self.ldap_providers = None
         # Enable this first - So that log file is available or created
         self.check_path()
         # Logger
@@ -232,13 +233,23 @@ class Config(Connection):
         """
         Get LDAP Providers from config file
         """
-        providers = self.read_providers_config()
+        self.ldap_providers = self.read_providers_config()
         # Get LDAP Provider IDs
         ldap_provider_ids = [provider['providerId']
-                             for provider in providers if provider['providerType'] == 'LDAP']
-
+                             for provider in self.ldap_providers if provider['providerType'] == 'LDAP']
+    
         if ldap_provider_ids:
             print("LDAP Provider is now set")
             self.logger.info("LDAP Provider is now set")
             # Default to the first LDAP Provider ID
             self.ldap_provider_id = ldap_provider_ids[0]
+    
+    @staticmethod
+    def construct_yaml_map(node):
+        # test if there are duplicate node keys
+        data = []
+        yield data
+        for key_node, value_node in node.value:
+            key = construct_object(key_node, deep=True)
+            val = construct_object(value_node, deep=True)
+            data.append((key, val))
