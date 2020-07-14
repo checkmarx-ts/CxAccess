@@ -213,6 +213,7 @@ class Config(Connection):
         """
         with open(self.update_ldap_roles_config, 'w') as update_ldap_writer:
             # Do not use yaml.load - To avoid Arbitrary Code Execution through YAML.
+            print("Writing meta", meta)
             print("Writing LDAP Config to: {0}".format(
                 self.update_ldap_roles_config))
             self.logger.info("Writing LDAP Config to: {0}".format(

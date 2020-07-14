@@ -248,12 +248,22 @@ class Teams(Config):
         response = self.session.request('GET', url=url, headers=headers, data={}, verify=self.verify)
         
         config_roles = {}
-
+        uniq_roles = None
+        
         if response.ok:
-            for role in response.json():
-                config_roles.update({
-                    self.get_role_name(role['roleId']): role['ldapGroupDn'].split(";")
-                })
+            roles = response.json()
+            uniq_roles = list(set([self.get_role_name(d['roleId']) for d in roles]))
+            
+            for uniq_role in uniq_roles:
+                config_roles.update({uniq_role: []})
+            
+            for role in roles:
+                iter_role = self.get_role_name(role['roleId'])
+                if iter_role in uniq_roles:
+                    existingMapppings = config_roles[iter_role]
+                    existingMapppings.append(role['ldapGroupDn'])
+                    config_roles.update({iter_role: existingMapppings})
+            
             self.write_update_ldap_config(config_roles)
             print("Roles save succeeded.")
             self.logger.info("Roles saved")
