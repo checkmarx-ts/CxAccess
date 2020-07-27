@@ -8,9 +8,11 @@ class Teams(Config):
     """
     LDAP Advanced Role Mappings & Checkmarx Team LDAP Mappings
     """
-    def __init__(self, verbose):
+    def __init__(self, verbose, server_name):
         super().__init__(verbose)
         config = self.read_cx_config()
+        # The LDAP Server Name
+        self.server_name = server_name
         if not config:
             print("Please check configuration files")
             self.logger.error("Please check configuration files")
@@ -113,7 +115,7 @@ class Teams(Config):
         """
         Get LDAP Mappings for teams
         """
-        self.get_ldap_providers_config()
+        self.get_ldap_providers_config(self.server_name)
         ldap_url = self.ldap_team_mappings_url.format(self.host, self.ldap_provider_id)
         try:
             response = self.session.request('GET', ldap_url, data=self.payload, headers=self.headers, verify=self.verify)
@@ -217,6 +219,7 @@ class Teams(Config):
         #         'ldapGroupDn': ";".join(ldap_role_updates[ldap_role_update])
         #     })
 
+
         for ldap_role_update in ldap_role_updates:
             for group in ldap_role_updates[ldap_role_update]:
                 config_roles.append({
@@ -227,7 +230,7 @@ class Teams(Config):
         config_roles = json.dumps(config_roles)
         headers = self.headers
         headers['Content-Type'] = 'application/json-patch+json;v=1.0'
-
+        
         url = "https://{0}/CxRestApi/auth/LDAPServers/{1}/RoleMappings".format(self.host, self.ldap_provider_id)
         response = self.session.request('PUT', url=url, headers=headers, data=config_roles, verify=self.verify)
         if response.ok:

@@ -230,27 +230,20 @@ class Config(Connection):
                 self.read_update_teams_config))
             return yaml.full_load(read_update_teams)
 
-    def get_ldap_providers_config(self):
+    def get_ldap_providers_config(self, server_name):
         """
         Get LDAP Providers from config file
         """
         self.ldap_providers = self.read_providers_config()
-        # Get LDAP Provider IDs
-        ldap_provider_ids = [provider['providerId']
-                             for provider in self.ldap_providers if provider['providerType'] == 'LDAP']
-    
-        if ldap_provider_ids:
+
+        
+        if server_name:
+            self.ldap_provider_id = [provider['providerId'] for provider in self.ldap_providers if provider['name'] == server_name][0]
+
+        else:
+            self.ldap_provider_id = [provider['providerId']
+                                for provider in self.ldap_providers if provider['providerType'] == 'LDAP'][0]
+
+        if self.verbose:
             print("LDAP Provider is now set")
-            self.logger.info("LDAP Provider is now set")
-            # Default to the first LDAP Provider ID
-            self.ldap_provider_id = ldap_provider_ids[0]
-    
-    @staticmethod
-    def construct_yaml_map(node):
-        # test if there are duplicate node keys
-        data = []
-        yield data
-        for key_node, value_node in node.value:
-            key = construct_object(key_node, deep=True)
-            val = construct_object(value_node, deep=True)
-            data.append((key, val))
+        self.logger.info("LDAP Provider is now set")

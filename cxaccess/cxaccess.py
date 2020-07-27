@@ -4,8 +4,8 @@
 {0} init [--verbose]
 {0} login [--save] [--verbose]
 {0} checktoken [--verbose]
-{0} getroles [--save] [--verbose]
-{0} updateroles [--verbose]
+{0} getroles [--save] [--verbose] [--server_name=<server_name>]
+{0} updateroles [--verbose] [--server_name=<server_name>]
 {0} getteams [--save] [--verbose]
 {0} updateteams [--verbose]
 {0} (-h | --help)
@@ -20,9 +20,10 @@ updateroles     Update LDAP Roles - Advanced Role Mapping. This replaces all exi
 updateteams     Update LDAP Mappings to CxSAST Teams.
 
 Options:
--s, --save               Save OAuth Token into configuration directory.
--h, --help               Help.
--v, --verbose            Display version of CxAccess.
+-s, --save                    Save OAuth Token into configuration directory.
+-h, --help                    Help.
+-v, --verbose                 Display version of CxAccess.
+--server_name=<server_name>   Specify LDAP Server Name. Default option is first LDAP Server in <providers.yaml>.    
 
 
 Report bugs to Checkmarx (Cx TS-APAC) <TS-APAC-PS@checkmarx.com>
@@ -49,6 +50,7 @@ def main(sysargv=None):
     
     # Default to 
     verbose = False
+    server_name = argv['--server_name']
     if argv['--verbose']:
         verbose = True
 
@@ -82,20 +84,20 @@ def main(sysargv=None):
         sys.stdout.write(str(gt.get_teams(save_config=False)))
     
     if argv['updateroles']:
-        gt = Teams(verbose)
+        gt = Teams(verbose, server_name)
         gt.update_ac_roles()
     
     if argv['getroles'] and argv['--save']:
-        gt = Teams(verbose)
+        gt = Teams(verbose, server_name)
         gt.save_ac_roles(save_config=True)
 
     # Can be optimized with the --save flag directly as boolean above
     if argv['getroles'] and not argv['--save']:
-        gt = Teams(verbose)
+        gt = Teams(verbose, server_name)
         gt.save_ac_roles(save_config=False)
     
     if argv['updateteams']:
-        gt = Teams(verbose)
+        gt = Teams(verbose, server_name)
         gt.update_teams()
 
 
