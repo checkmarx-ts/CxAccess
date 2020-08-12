@@ -1,5 +1,4 @@
 ---
-**NOTE**
 
 To use the latest version of CxAccess (v0.0.15 and Above), Ensure that your Checkmarx CxSAST Instance is upgraded to v9.0 with Hotfix 8.
 
