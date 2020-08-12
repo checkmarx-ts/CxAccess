@@ -6,8 +6,8 @@
 {0} checktoken [--verbose]
 {0} getroles [--save] [--verbose] [--server_name=<server_name>]
 {0} updateroles [--verbose] [--server_name=<server_name>]
-{0} getteams [--save] [--verbose]
-{0} updateteams [--verbose]
+{0} getteams [--save] [--verbose] [--server_name=<server_name>]
+{0} updateteams [--verbose] [--server_name=<server_name>]
 {0} (-h | --help)
 {0} version
 
@@ -74,12 +74,12 @@ def main(sysargv=None):
         config.read_token()
 
     if argv['getteams']and argv['--save']:
-        gt = Teams(verbose)
+        gt = Teams(verbose, server_name)
         gt.get_teams(save_config=True)
     
     # Can be optimized with the --save flag directly as boolean above
     if argv['getteams'] and not argv['--save']:
-        gt = Teams(verbose)
+        gt = Teams(verbose, server_name)
         sys.stdout.flush()
         sys.stdout.write(str(gt.get_teams(save_config=False)))
     

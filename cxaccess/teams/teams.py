@@ -212,25 +212,19 @@ class Teams(Config):
 
         config_roles = []
 
-        # To use multi-group entry in one-shot
-        # for ldap_role_update in ldap_role_updates:
-        #     config_roles.append({
-        #         'roleId': self.get_role_id(ldap_role_update),
-        #         'ldapGroupDn': ";".join(ldap_role_updates[ldap_role_update])
-        #     })
-
-
         for ldap_role_update in ldap_role_updates:
-            for group in ldap_role_updates[ldap_role_update]:
-                config_roles.append({
-                    'roleId': self.get_role_id(ldap_role_update),
-                    'ldapGroupDn': group
-                })
-    
+            config_roles.append({
+                'roleId': self.get_role_id(ldap_role_update),
+                'ldapGroupDn': ";".join(ldap_role_updates[ldap_role_update])
+            })
         config_roles = json.dumps(config_roles)
+        
         headers = self.headers
         headers['Content-Type'] = 'application/json-patch+json;v=1.0'
         
+        #########
+        ## Remove Static LdapserverID
+        #########
         url = "https://{0}/CxRestApi/auth/LDAPServers/{1}/RoleMappings".format(self.host, self.ldap_provider_id)
         response = self.session.request('PUT', url=url, headers=headers, data=config_roles, verify=self.verify)
         if response.ok:
@@ -251,22 +245,12 @@ class Teams(Config):
         response = self.session.request('GET', url=url, headers=headers, data={}, verify=self.verify)
         
         config_roles = {}
-        uniq_roles = None
-        
+
         if response.ok:
-            roles = response.json()
-            uniq_roles = list(set([self.get_role_name(d['roleId']) for d in roles]))
-            
-            for uniq_role in uniq_roles:
-                config_roles.update({uniq_role: []})
-            
-            for role in roles:
-                iter_role = self.get_role_name(role['roleId'])
-                if iter_role in uniq_roles:
-                    existingMapppings = config_roles[iter_role]
-                    existingMapppings.append(role['ldapGroupDn'])
-                    config_roles.update({iter_role: existingMapppings})
-            
+            for role in response.json():
+                config_roles.update({
+                    self.get_role_name(role['roleId']): role['ldapGroupDn'].split(";")
+                })
             self.write_update_ldap_config(config_roles)
             print("Roles save succeeded.")
             self.logger.info("Roles saved")
