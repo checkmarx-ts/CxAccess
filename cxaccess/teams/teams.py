@@ -81,7 +81,7 @@ class Teams(Config):
 
             if save_config:
                 self.save_teams_config(meta=self.prepare_team_data_write_meta(meta_teams_data))
-                print("Teams config fetch successfull.")
+                print("Teams config fetched successfully.")
                 return True
             else:
                 return meta_teams_data
