@@ -35,7 +35,7 @@ class Teams(Config):
         self.get_ldap_team_mappings()
         self.get_ldap_role_mappings()
         self.logger.info("Teams module initialized")
-    
+
     def roles_team_helper(self, ldap_team_mappings):
         """
         Helper method to make code less ugly
@@ -55,13 +55,13 @@ class Teams(Config):
         for d in data:
             config_data.append({d['ldapGroupDisplayName']: d['ldapGroupDn']})
         return config_data
-    
+
     def prepare_team_data_write_meta(self, data):
         meta_config = dict()
         for d in data:
             meta_config.update({d["name"]: self.iterate_team_ldap_mappings(data=d['ldap_team_mappings']) })
         return meta_config
-    
+
     def get_teams(self, save_config):
         """
         Fetch all teams on CxAC
@@ -161,11 +161,11 @@ class Teams(Config):
             else:
                 print(response.status_code, response.reason)
                 print(response.json())
-                self.logger.error(response.text)     
+                self.logger.error(response.text)
         except Exception as err:
             self.logger.error("Error. {0}".format(err))
             raise Exception
-    
+
     def get_role_name(self, roleId):
         """
         Get Role Name from roleID
@@ -179,7 +179,7 @@ class Teams(Config):
         if id:
             return id[0]
         return
-    
+
     def get_team_id(self, team_name):
         headers = self.headers
         headers['Content-Type'] = 'application/json;v=1.0'
@@ -218,10 +218,10 @@ class Teams(Config):
                 'ldapGroupDn': ";".join(ldap_role_updates[ldap_role_update])
             })
         config_roles = json.dumps(config_roles)
-        
+
         headers = self.headers
         headers['Content-Type'] = 'application/json-patch+json;v=1.0'
-        
+
         #########
         ## Remove Static LdapserverID
         #########
@@ -231,7 +231,7 @@ class Teams(Config):
             print("Roles Update succeeded.")
         else:
             print(response.reason, response.status_code)
-            
+
             print("Roles update failed")
             self.logger.error(response.text)
 
@@ -243,7 +243,7 @@ class Teams(Config):
         headers['Content-Type'] = 'application/json;v=1.0'
         url = "https://{0}/CxRestApi/auth/LDAPRoleMappings?ldapServerId={1}".format(self.host, self.ldap_provider_id)
         response = self.session.request('GET', url=url, headers=headers, data={}, verify=self.verify)
-        
+
         config_roles = {}
 
         if response.ok:
@@ -271,15 +271,15 @@ class Teams(Config):
             config_teams = []
 
             # Each team here is a checkmarx team
-            # Get the Team ID 
+            # Get the Team ID
 
             for team in cx_teams:
                 teamId = self.get_team_id(team)
-                
+
                 if self.verbose and not teamId:
                     print("Error: Team {0} does not exist".format(team))
-                
-                
+
+
                 for index, ldap_team_map in enumerate(teams_update[team]):
                     dnName = list(ldap_team_map.keys())[0]
                     config_teams.append({
@@ -287,21 +287,21 @@ class Teams(Config):
                         "ldapGroupDisplayName": dnName,
                         "ldapGroupDn": teams_update[team][index][dnName]
                     })
-            
+
             config_teams = json.dumps(config_teams)
             headers = self.headers
             headers['Content-Type'] = 'application/json;v=1.0'
-            
+
             url = "https://{0}/CxRestApi/auth/LDAPServers/{1}/TeamMappings".format(self.host, self.ldap_provider_id)
             response = self.session.request('PUT', url=url, headers=headers, data=config_teams, verify=self.verify)
-            
+
             if response.ok:
                 print("teams update succeeded.")
             else:
                 print(response.reason, response.status_code)
                 print("Roles update failed.")
                 self.logger.error(response.text)
-        
+
         except Exception as err:
             if self.verbose:
                 print(err)

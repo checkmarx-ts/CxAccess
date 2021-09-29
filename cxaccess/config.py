@@ -236,7 +236,7 @@ class Config(Connection):
         """
         self.ldap_providers = self.read_providers_config()
 
-        
+
         if server_name:
             self.ldap_provider_id = [provider['providerId'] for provider in self.ldap_providers if provider['name'] == server_name][0]
 

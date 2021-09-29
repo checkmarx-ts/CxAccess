@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''Usage: 
+'''Usage:
 {0} init [--verbose]
 {0} login [--save] [--verbose]
 {0} checktoken [--verbose]
@@ -14,7 +14,7 @@
 Commands:
 init            Create OR Reinitialize a configuration file to connect to Checkmarx cxsast v9.0
 login           Authenticate user on Checkmarx
-checktoken      Check token as unexpired. (Requires login --save to be used prior. )  
+checktoken      Check token as unexpired. (Requires login --save to be used prior. )
 getroles        Fetch available roles locally
 updateroles     Update LDAP Roles - Advanced Role Mapping. This replaces all existing roles
 updateteams     Update LDAP Mappings to CxSAST Teams.
@@ -23,7 +23,7 @@ Options:
 -s, --save                    Save OAuth Token into configuration directory.
 -h, --help                    Help.
 -v, --verbose                 Display version of CxAccess.
---server_name=<server_name>   Specify LDAP Server Name. Default option is first LDAP Server in <providers.yaml>.    
+--server_name=<server_name>   Specify LDAP Server Name. Default option is first LDAP Server in <providers.yaml>.
 
 
 Report bugs to Checkmarx (Cx TS-APAC) <TS-APAC-PS@checkmarx.com>
@@ -47,8 +47,8 @@ def main(sysargv=None):
     if argv['version']:
         print("CxAccess version: {0}".format(__version__))
         sys.exit(0)
-    
-    # Default to 
+
+    # Default to
     verbose = False
     server_name = argv['--server_name']
     if argv['--verbose']:
@@ -60,33 +60,33 @@ def main(sysargv=None):
     if argv['init']:
         if not config_checked:
             config_checked = config.check_path()
-    
+
     # Perform Authentication and Save token
     if argv['login'] and argv['--save']:
         authy = Auth(verbose)
         authy.perform_auth(save_config=True)
-    
+
     if argv['login'] and not argv['--save']:
         authy = Auth(verbose)
         authy.perform_auth()
-    
+
     if argv['checktoken']:
         config.read_token()
 
     if argv['getteams']and argv['--save']:
         gt = Teams(verbose, server_name)
         gt.get_teams(save_config=True)
-    
+
     # Can be optimized with the --save flag directly as boolean above
     if argv['getteams'] and not argv['--save']:
         gt = Teams(verbose, server_name)
         sys.stdout.flush()
         sys.stdout.write(str(gt.get_teams(save_config=False)))
-    
+
     if argv['updateroles']:
         gt = Teams(verbose, server_name)
         gt.update_ac_roles()
-    
+
     if argv['getroles'] and argv['--save']:
         gt = Teams(verbose, server_name)
         gt.save_ac_roles(save_config=True)
@@ -95,7 +95,7 @@ def main(sysargv=None):
     if argv['getroles'] and not argv['--save']:
         gt = Teams(verbose, server_name)
         gt.save_ac_roles(save_config=False)
-    
+
     if argv['updateteams']:
         gt = Teams(verbose, server_name)
         gt.update_teams()
